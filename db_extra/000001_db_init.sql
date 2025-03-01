@@ -51,8 +51,8 @@ user_id      UUID                     NOT NULL,
 fundraise_id UUID                     NOT NULL,
 amount       NUMERIC(72, 18)          NOT NULL,
 created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
-FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-FOREIGN KEY(fundraise_id) REFERENCES fundraises(fundraise_id) ON UPDATE CASCADE ON DELETE CASCADE
+FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE NO CASCADE ON DELETE NO ACTION,
+FOREIGN KEY(fundraise_id) REFERENCES fundraises(fundraise_id) ON UPDATE CASCADE ON DELETE FORBIDDEN
 );
 
 CREATE TABLE payments (
@@ -95,7 +95,7 @@ description VARCHAR             NOT NULL,
 raffle_id   UUID                NOT NULL,
 user_id     UUID                NOT NULL,
 FOREIGN KEY(raffle_id) REFERENCES raffles(raffle_id) ON UPDATE CASCADE ON DELETE CASCADE,
-FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE CASCADE
+FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE NO ACTION
 );
 
 CREATE TABLE gift_images (
@@ -126,7 +126,7 @@ event_id UUID NOT NULL,
 user_id  UUID NOT NULL,
 PRIMARY KEY(event_id, user_id),
 FOREIGN KEY(event_id) REFERENCES events(event_id) ON UPDATE CASCADE ON DELETE CASCADE,
-FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE CASCADE
+FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE NO ACTION
 );
 
 CREATE TABLE event_images (
