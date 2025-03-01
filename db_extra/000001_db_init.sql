@@ -52,7 +52,7 @@ fundraise_id UUID                     NOT NULL,
 amount       NUMERIC(72, 18)          NOT NULL,
 created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
 FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE NO CASCADE ON DELETE NO ACTION,
-FOREIGN KEY(fundraise_id) REFERENCES fundraises(fundraise_id) ON UPDATE CASCADE ON DELETE RESTRICT
+FOREIGN KEY(fundraise_id) REFERENCES fundraises(fundraise_id) ON UPDATE CASCADE ON DELETE NO ACTION
 );
 
 CREATE TABLE payments (
@@ -109,8 +109,8 @@ CREATE TABLE events (
 event_id         UUID    PRIMARY KEY      NOT NULL,
 title            VARCHAR                  NOT NULL,
 description      VARCHAR                  NOT NULL,
-date             DATE                     NOT NULL,
-time             TIME                     NOT NULL,
+start_date       TIMESTAMP WITH TIME ZONE NOT NULL,
+end_date         TIMESTAMP WITH TIME ZONE NULL,
 format           VARCHAR                  NOT NULL,
 max_participants INTEGER                  NOT NULL,
 minimum_donation NUMERIC(72, 18)          NOT NULL,
@@ -118,7 +118,12 @@ address          VARCHAR                  NOT NULL,
 status           VARCHAR                      NULL,
 fundraise_id     UUID                     NOT NULL,
 created_at       TIMESTAMP WITH TIME ZONE NOT NULL,
+FOREIGN KEY(format) REFERENCES event_formats(format) ON UPDATE CASCADE ON DELETE CASCADE,
 FOREIGN KEY(fundraise_id) REFERENCES fundraises(fundraise_id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE event_formats (
+format VARCHAR PRIMARY KEY
 );
 
 CREATE TABLE event_participants (
