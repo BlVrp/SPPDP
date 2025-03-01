@@ -52,7 +52,7 @@ fundraise_id UUID                     NOT NULL,
 amount       NUMERIC(72, 18)          NOT NULL,
 created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
 FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE NO CASCADE ON DELETE NO ACTION,
-FOREIGN KEY(fundraise_id) REFERENCES fundraises(fundraise_id) ON UPDATE CASCADE ON DELETE FORBIDDEN
+FOREIGN KEY(fundraise_id) REFERENCES fundraises(fundraise_id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 CREATE TABLE payments (
