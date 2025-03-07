@@ -4,6 +4,8 @@ import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import Navbar from "@/components/Navbar";
+import "../../global.css"
 
 export default function HomeScreen() {
   return (
@@ -15,6 +17,7 @@ export default function HomeScreen() {
           style={styles.reactLogo}
         />
       }>
+      <Navbar />
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
