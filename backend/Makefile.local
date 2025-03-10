@@ -1,0 +1,4 @@
+# Variables
+
+swagger_generate:
+	swag init -q -g ./app/console/server.go -o ./app/console/docs --ot go --parseDependency
