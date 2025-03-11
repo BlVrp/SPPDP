@@ -4,7 +4,7 @@ How to run frontend:
 
 1. cd one-help-fe
 2. npm install
-3. npm expo start
+3. npx expo start
 
 How to run on your phone( if you have Android):
 
