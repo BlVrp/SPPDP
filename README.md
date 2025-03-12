@@ -21,3 +21,12 @@ Turn on USB debugging.
 3. Connect your phone to your computer via USB cable.
 
 Make sure your phone is unlocked, and allow any prompts to trust your computer.
+
+## How to run backend...
+
+copy config file content of `.one-help.env` into `./backend/configs/.one-help.env`
+
+then run
+```bash
+cd ./backend ; docker compose up --build
+```

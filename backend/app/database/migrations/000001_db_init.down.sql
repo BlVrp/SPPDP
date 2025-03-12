@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS event_images;
+DROP TABLE IF EXISTS event_participants;
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS event_formats;
+DROP TABLE IF EXISTS gift_images;
+DROP TABLE IF EXISTS gifts;
+DROP TABLE IF EXISTS raffles;
+DROP TABLE IF EXISTS proof_images;
+DROP TABLE IF EXISTS proofs;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS donations;
+DROP TABLE IF EXISTS fundraises;
+DROP TABLE IF EXISTS fundraise_statuses;
+DROP TABLE IF EXISTS delivery_addresses;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS user_creds;
+DROP TABLE IF EXISTS users;
