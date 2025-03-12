@@ -14,8 +14,8 @@ export default function Navbar() {
       </TouchableOpacity>
 
       <View className="flex-row items-right space-x-2">
-        <Text className="text-xl">💙</Text>
-        <Text className="text-xl font-bold">OneHelp</Text>
+        <Text className="text-3xl">💙</Text>
+        <Text className="text-3xl">OneHelp</Text>
       </View>
 
       {/* Sidebar Component */}

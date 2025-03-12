@@ -15,6 +15,10 @@ module.exports = {
         '8xl': '6rem',     // 96px
         '9xl': '8rem',     // 128px
       },
+      colors: {
+        'accent': '#EFF6FF',
+        'grey-msg': '#4B5563',
+      },
     },
   },
   plugins: [],
