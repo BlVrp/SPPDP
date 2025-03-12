@@ -1,6 +1,7 @@
 import { StyleSheet, SafeAreaView } from 'react-native';
 import Navbar from '@/components/Navbar';
 import "../../global.css";
+import Welcome from '@/components/ui/Welcome';
 
 export default function HomeScreen() {
   return (
@@ -8,6 +9,12 @@ export default function HomeScreen() {
       {/* SafeAreaView ensures content appears below system display */}
       <SafeAreaView style={{ flex: 1 }}>
         <Navbar />
+        <Welcome user={{
+          name: 'Олеся',
+          donated: 0,
+          events: 0,
+          raffles: 0
+        }} />
       </SafeAreaView>
     </>
   );
