@@ -1,98 +1,103 @@
 import {
-View,
-Text,
-TouchableOpacity,
-Modal,
-TouchableWithoutFeedback,
-Animated,
-PanResponder,
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  TouchableWithoutFeedback,
+  Animated,
+  PanResponder,
 } from "react-native";
+import { Link } from "expo-router";
 import { useEffect, useRef } from "react";
 import Icon from "react-native-vector-icons/Feather";
 import { StatusBar } from "react-native";
 
 interface SidebarProps {
-isOpen: boolean;
-onClose: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export default function SideBar({ isOpen, onClose }: SidebarProps) {
-const translateX = useRef(new Animated.Value(-300)).current; // Початкове положення за екраном
+  const translateX = useRef(new Animated.Value(-300)).current; // Початкове положення за екраном
 
-useEffect(() => {
+  useEffect(() => {
     Animated.timing(translateX, {
-    toValue: isOpen ? 0 : -300,
-    duration: 300,
-    useNativeDriver: true,
+      toValue: isOpen ? 0 : -300,
+      duration: 300,
+      useNativeDriver: true,
     }).start();
-}, [isOpen]);
+  }, [isOpen]);
 
-const panResponder = useRef(
+  const panResponder = useRef(
     PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) =>
+      onMoveShouldSetPanResponder: (_, gestureState) =>
         Math.abs(gestureState.dx) > 10, // Почати свайп при горизонтальному русі
-    onPanResponderMove: (_, gestureState) => {
+      onPanResponderMove: (_, gestureState) => {
         if (gestureState.dx < 0) {
-        translateX.setValue(gestureState.dx);
+          translateX.setValue(gestureState.dx);
         }
-    },
-    onPanResponderRelease: (_, gestureState) => {
+      },
+      onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx < -100) {
-        onClose();
+          onClose();
         } else {
-        Animated.timing(translateX, {
+          Animated.timing(translateX, {
             toValue: 0,
             duration: 200,
             useNativeDriver: true,
-        }).start();
+          }).start();
         }
-    },
+      },
     })
-).current;
+  ).current;
 
-return (
+  return (
     <Modal visible={isOpen} animationType="fade" transparent>
-    <TouchableWithoutFeedback onPress={onClose}>
+      <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 bg-black bg-opacity-50">
-        {/* Sidebar Container */}
-        <Animated.View
+          {/* Sidebar Container */}
+          <Animated.View
             {...panResponder.panHandlers}
             style={{
-            transform: [{ translateX }],
-            width: "75%",
-            height: "100%",
-            backgroundColor: "white",
-            paddingTop: StatusBar.currentHeight || 55,
-            paddingHorizontal: 22,
-            shadowColor: "#000",
-            shadowOpacity: 0.2,
-            shadowRadius: 4,
+              transform: [{ translateX }],
+              width: "75%",
+              height: "100%",
+              backgroundColor: "white",
+              paddingTop: StatusBar.currentHeight || 55,
+              paddingHorizontal: 22,
+              shadowColor: "#000",
+              shadowOpacity: 0.2,
+              shadowRadius: 4,
             }}
-        >
+          >
             {/* Close Button */}
             <TouchableOpacity onPress={onClose} className="self-end mb-4">
-            <Icon name="x" size={28} color="black" />
+              <Icon name="x" size={28} color="black" />
             </TouchableOpacity>
 
             {/* Sidebar Menu */}
-            <TouchableOpacity onPress={() => console.log("Збори натиснуто")} className="py-2">
-            <Text className="text-2xl font-semibold">💰 Збори</Text>
-            </TouchableOpacity>
+            <Link href="/" className="py-2" onPress={onClose}>
+              <Text className="text-2xl font-semibold">🏠 Головна</Text>
+            </Link>
 
-            <TouchableOpacity onPress={() => console.log("Події натиснуто")} className="py-2">
-            <Text className="text-2xl pt-4 font-semibold">🪩 Події</Text>
-            </TouchableOpacity>
+            <Link href="/fundraises" className="pt-4 py-2" onPress={onClose}>
+              <Text className="text-2xl font-semibold">💰 Збори</Text>
+            </Link>
 
-            <TouchableOpacity onPress={() => console.log("Розіграші натиснуто")} className="py-2">
-            <Text className="text-2xl pt-4 font-semibold">🎟 Розіграші</Text>
-            </TouchableOpacity>
+            <Link href="/events" className="pt-4 py-2" onPress={onClose}>
+              <Text className="text-2xl font-semibold">🪩 Події</Text>
+            </Link>
 
-            <TouchableOpacity onPress={() => console.log("Налаштування натиснуто")} className="py-2">
-            <Text className="text-2xl pt-4 font-semibold">️⚙ Налаштування</Text>
-            </TouchableOpacity>
-        </Animated.View>
+            <Link href="/raffles" className="pt-4 py-2" onPress={onClose}>
+              <Text className="text-2xl font-semibold">🎟 Розіграші</Text>
+            </Link>
+
+            <Link href="/settings" className="pt-4 py-2" onPress={onClose}>
+              <Text className="text-2xl font-semibold">⚙ Налаштування</Text>
+            </Link>
+          </Animated.View>
         </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
     </Modal>
-);
+  );
 }
