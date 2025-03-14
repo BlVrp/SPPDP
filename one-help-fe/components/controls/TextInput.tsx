@@ -17,7 +17,7 @@ export function TextInput({
   label,
   required,
   className,
-  error = false, // Default value for error
+  error = false,
   errorMessage,
   ...props
 }: TextInputProps) {

@@ -47,8 +47,9 @@ export default function RootLayout() {
           name="fundraises/create"
           options={{ headerShown: false }}
         />
-
         <Stack.Screen name="events/index" options={{ headerShown: false }} />
+        <Stack.Screen name="events/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="events/create" options={{ headerShown: false }} />
         <Stack.Screen name="raffles/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings/index" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />

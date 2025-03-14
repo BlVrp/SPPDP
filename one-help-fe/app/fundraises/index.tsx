@@ -6,9 +6,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation } from "expo-router";
+import { useNavigation, Link } from "expo-router";
 import FundraiserCard from "@/components/ui/FundraiserCard";
-import { Link } from "expo-router";
 
 export default function FundraisersList() {
   const navigation = useNavigation();

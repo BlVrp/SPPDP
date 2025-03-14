@@ -14,7 +14,7 @@ export default function CreateFundraise() {
 
   const onSubmit = (data: any) => {
     console.log("Новий збір:", data);
-    router.back(); // Повертаємось на головний екран після створення
+    router.back();
   };
 
   return (
