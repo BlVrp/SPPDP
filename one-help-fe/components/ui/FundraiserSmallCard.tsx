@@ -45,7 +45,9 @@ export default function FundraiseSmallCard({
       />
 
       <TouchableOpacity className="bg-blue-600 py-2 rounded-xl mt-2">
-        <Text className="text-white text-center font-semibold">Донат 🍩</Text>
+        <Text className="text-white text-center font-semibold text-md">
+          Донат 🍩
+        </Text>
       </TouchableOpacity>
     </View>
   );

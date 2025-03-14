@@ -34,8 +34,8 @@ export default function RecentFunsraises() {
   }, []);
 
   return (
-    <View className="bg-white p-4">
-      <View className="flex-row justify-between items-center mb-4">
+    <View className="bg-white px-4">
+      <View className="flex-row justify-between items-center">
         <Text className="text-2xl text-black">Активні збори</Text>
         <Link href="/fundraises" className="pt-4 py-2">
           <Text className="text-primary text-lg">Див усі</Text>
