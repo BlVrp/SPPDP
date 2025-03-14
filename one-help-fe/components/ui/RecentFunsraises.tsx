@@ -1,17 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
 import { useNavigation, Link } from "expo-router";
-import FundraiserCard from "@/components/ui/FundraiserCard";
+import FundraiseSmallCard from "@/components/ui/FundraiserSmallCard";
 
-export default function FundraisersList() {
-  const navigation = useNavigation();
-
+export default function RecentFunsraises() {
   const [fundraisers, setFundraisers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,11 +34,11 @@ export default function FundraisersList() {
   }, []);
 
   return (
-    <View className="flex-1 bg-white p-4">
+    <View className="bg-white p-4">
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-2xl text-black">Активні збори</Text>
-        <Link href="/fundraises/create" className="pt-4 py-2">
-          <Text className="text-primary text-lg">+ Створити збір</Text>
+        <Link href="/fundraises" className="pt-4 py-2">
+          <Text className="text-primary text-lg">Див усі</Text>
         </Link>
       </View>
 
@@ -55,8 +47,9 @@ export default function FundraisersList() {
       ) : (
         <FlatList
           data={fundraisers}
+          scrollEnabled={false}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <FundraiserCard fundraiser={item} />}
+          renderItem={({ item }) => <FundraiseSmallCard fundraiser={item} />}
           showsVerticalScrollIndicator={false}
         />
       )}
