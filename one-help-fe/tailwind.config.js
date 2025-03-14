@@ -19,6 +19,8 @@ module.exports = {
         accent: "#EFF6FF",
         "grey-msg": "#4B5563",
         primary: "#2563EB",
+        "purple-bgr": "#EDE9FE",
+        "purple-msg": "#7C3AED",
       },
     },
   },

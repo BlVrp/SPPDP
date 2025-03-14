@@ -1,6 +1,7 @@
 import { SafeAreaView, ScrollView } from "react-native";
 import Welcome from "@/components/ui/Welcome";
 import RecentFunsraises from "@/components/ui/RecentFunsraises";
+import RecentEvents from "@/components/ui/RecentEvents";
 
 export default function HomeScreen() {
   return (
@@ -16,6 +17,7 @@ export default function HomeScreen() {
             }}
           />
           <RecentFunsraises />
+          <RecentEvents />
         </SafeAreaView>
       </ScrollView>
     </>
