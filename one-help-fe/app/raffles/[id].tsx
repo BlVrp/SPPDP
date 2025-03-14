@@ -95,7 +95,6 @@ export default function RaffleDetail() {
           <Text className="text-grey-msg text-md mt-4">
             {raffle.description}
           </Text>
-
           <Text className="text-grey-msg mt-2">
             📆 Донати приймаються до {raffle.fundraiser.end_date}
           </Text>
