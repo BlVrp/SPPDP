@@ -51,6 +51,8 @@ export default function RootLayout() {
         <Stack.Screen name="events/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="events/create" options={{ headerShown: false }} />
         <Stack.Screen name="raffles/index" options={{ headerShown: false }} />
+        <Stack.Screen name="raffles/create" options={{ headerShown: false }} />
+        <Stack.Screen name="raffles/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="settings/index" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
