@@ -29,7 +29,7 @@ export default function EventSmallCard({ event }: EventCardProps) {
 
       <TouchableOpacity className="bg-primary py-2 rounded-xl mt-3">
         <Text className="text-white text-center font-semibold">
-          Зареєструватись
+          Зареєструватись 📝
         </Text>
       </TouchableOpacity>
     </View>
