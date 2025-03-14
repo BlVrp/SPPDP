@@ -25,18 +25,15 @@ export default function FundraiserCard({ fundraiser }: FundraiserCardProps) {
       }}
     >
       <View className="bg-white rounded-lg p-4 mb-4">
-        {/* Зображення */}
         <Image
           source={{ uri: fundraiser.image }}
           className="w-full h-32 rounded-lg mb-3"
           resizeMode="cover"
         />
 
-        {/* Заголовок та опис */}
         <Text className="text-lg font-semibold">{fundraiser.title}</Text>
-        <Text className="text-grey-msg text-">{fundraiser.description}</Text>
+        <Text className="text-grey-msg">{fundraiser.description}</Text>
 
-        {/* Прогрес збору */}
         <Text className="text-grey-msg mt-2">
           {fundraiser.raised.toLocaleString()} /{" "}
           {fundraiser.goal.toLocaleString()}
@@ -47,7 +44,6 @@ export default function FundraiserCard({ fundraiser }: FundraiserCardProps) {
           className="h-2 rounded-xl mt-1"
         />
 
-        {/* Кнопка донату */}
         <TouchableOpacity className="bg-primary rounded-lg p-2 mt-3 items-center">
           <Text className="text-white font-semibold">Донат 🍩</Text>
         </TouchableOpacity>

@@ -3,7 +3,6 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ProgressBar } from "react-native-paper";
 
-// Тимчасові дані (замість API)
 const TEMP_FUNDRAISERS = [
   {
     id: "1",
@@ -34,7 +33,6 @@ export default function DetailedFundraiseCard() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  // Знаходимо потрібний збір
   const fundraiser = TEMP_FUNDRAISERS.find((item) => item.id === id);
 
   if (!fundraiser) {
@@ -54,24 +52,20 @@ export default function DetailedFundraiseCard() {
   return (
     <ScrollView className="flex-1 bg-white p-4">
       <View className="bg-accent p-4 rounded-2xl">
-        {/* Картинка */}
         <Image
           source={{ uri: fundraiser.image }}
           className="w-full h-96 rounded-lg mb-4"
           resizeMode="cover"
         />
 
-        {/* Назва збору */}
         <Text className="text-xl font-bold text-black text-center mb-2">
           {fundraiser.title}
         </Text>
 
-        {/* Опис */}
         <Text className="text-gray-msg mt-2 text-base leading-5 mb-50">
           {fundraiser.description}
         </Text>
 
-        {/* Прогрес збору */}
         <View className="mt-4">
           <Text className="text-grey-msg text-sm text-center font-medium">
             {fundraiser.raised.toLocaleString()} /{" "}
@@ -84,7 +78,6 @@ export default function DetailedFundraiseCard() {
           />
         </View>
 
-        {/* Кнопка донату */}
         <TouchableOpacity className="bg-primary rounded-lg p-3 mt-5 items-center">
           <Text className="text-white text-lg font-semibold">Донат 🍩</Text>
         </TouchableOpacity>
