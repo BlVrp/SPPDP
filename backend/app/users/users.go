@@ -2,8 +2,6 @@ package users
 
 import (
 	"github.com/google/uuid"
-
-	"one-help/app/users/auth"
 )
 
 // Config defines configuration for users.
@@ -19,9 +17,7 @@ type User struct {
 	Website   string
 	FileName  string
 
-	auth.Credentials
-
-	DeliveryAddresses []DeliveryAddress
+	DeliveryAddress
 }
 
 // FullName returns the full name of the user.
@@ -32,4 +28,19 @@ func (u *User) FullName() string {
 	}
 
 	return u.FirstName + " " + u.LastName
+}
+
+// IsDeliveryAddressFull returns true if delivery address is full-filled.
+func (u *User) IsDeliveryAddressFull() bool {
+	return u.City != "" && u.Post != "" && u.PostDepartment != ""
+}
+
+// IsDeliveryAddressEmpty returns true if delivery address is full-empty.
+func (u *User) IsDeliveryAddressEmpty() bool {
+	return u.City == "" && u.Post == "" && u.PostDepartment == ""
+}
+
+// EmptyDeliveryAddress clear delivery address.
+func (u *User) EmptyDeliveryAddress() {
+	u.DeliveryAddress = DeliveryAddress{}
 }

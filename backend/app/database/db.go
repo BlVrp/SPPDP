@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -10,7 +12,10 @@ import (
 	"github.com/zeebo/errs"
 
 	"one-help/app"
+	"one-help/app/users"
 )
+
+var logger = log.Default()
 
 // Config contains configurable values for one-help db.
 type Config struct {
@@ -63,7 +68,40 @@ func (db *database) ExecuteMigrations(migrationsPath string, isUp bool) (err err
 	return Error.Wrap(m.Down())
 }
 
+// Users provides access to users.DB.
+func (db *database) Users() users.DB {
+	return newUsersDB(db.conn)
+}
+
 // Close closes underlying db connection.
 func (db *database) Close() error {
 	return Error.Wrap(db.conn.Close())
+}
+
+// DeferCommitRollback provides helping functionality to commit or rollback transaction,
+// based on the error state, with provided error updated.
+// NOTE: in case the DeferCommitRollback called as a deffer statement,
+// Rollback or Commit should not be called by themselves.
+// NOTE: if DeferCommitRollback is called from function that panics, the panic value will be recovered,
+// database transaction will be closed with rollback, and panic value will be printed to stdout.
+func DeferCommitRollback(tx *sql.Tx, err *error) {
+	if panicVal := recover(); panicVal != nil {
+		logger.Println("[DeferCommitRollback] called from function that panics -> database transaction will be closed with rollback")
+		logger.Println(panicVal) // INFO: Notify about panic message.
+		*err = errs.Combine(*err, fmt.Errorf("panic detected"))
+	}
+
+	var innerErr error
+	if *err != nil {
+		innerErr = tx.Rollback()
+		if innerErr != nil {
+			logger.Println("failed to rollback transaction", innerErr)
+		}
+	} else {
+		innerErr = tx.Commit()
+		if innerErr != nil {
+			logger.Println("failed to commit transaction", innerErr)
+		}
+	}
+	*err = errs.Combine(*err, innerErr)
 }
