@@ -8,8 +8,8 @@ file_name  VARCHAR                 NULL
 
 CREATE TABLE IF NOT EXISTS user_creds (
 user_id       UUID    PRIMARY KEY NOT NULL,
-phone_number  VARCHAR                 NULL,
-email         VARCHAR                 NULL,
+phone_number  VARCHAR UNIQUE          NULL,
+email         VARCHAR UNIQUE          NULL,
 password_hash VARCHAR             NOT NULL,
 FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
@@ -40,7 +40,6 @@ target_amount NUMERIC(72, 18)          NOT NULL,
 start_date    TIMESTAMP WITH TIME ZONE NOT NULL,
 end_date      TIMESTAMP WITH TIME ZONE     NULL,
 status        VARCHAR                  NOT NULL,
-btc_address   VARCHAR                      NULL,
 FOREIGN KEY(organizer_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE CASCADE,
 FOREIGN KEY(status) REFERENCES fundraise_statuses(status) ON UPDATE CASCADE ON DELETE CASCADE
 );

@@ -1,0 +1,43 @@
+package postgres
+
+import (
+	"errors"
+	"strings"
+)
+
+const (
+	// pgErrorClassIntegrityConstraintViolation is the class of PostgreSQL errors indicating
+	// integrity constraint violations.
+	pgErrorClassIntegrityConstraintViolation = "23"
+	// pgUniqueViolation is an error indicating unique constraint violation.
+	pgUniqueViolation = "23505"
+)
+
+// FromError returns the 5-character PostgreSQL error code string associated
+// with the given error, if any.
+func FromError(err error) string {
+	var sqlStateErr errWithSQLState
+	if errors.As(err, &sqlStateErr) {
+		return sqlStateErr.SQLState()
+	}
+	return ""
+}
+
+// IsConstraintError checks if given error is about constraint violation.
+func IsConstraintError(err error) bool {
+	errCode := FromError(err)
+	return strings.HasPrefix(errCode, pgErrorClassIntegrityConstraintViolation)
+}
+
+// IsUniqueViolationError checks if given error is unique violation error.
+func IsUniqueViolationError(err error) bool {
+	errCode := FromError(err)
+	return strings.HasPrefix(errCode, pgUniqueViolation)
+}
+
+// errWithSQLState is an interface supported by error classes corresponding
+// to PostgreSQL errors from certain drivers. An effort is
+// apparently underway to get lib/pq to add this interface.
+type errWithSQLState interface {
+	SQLState() string
+}
