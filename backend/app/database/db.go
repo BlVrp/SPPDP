@@ -13,6 +13,7 @@ import (
 
 	"one-help/app"
 	"one-help/app/users"
+	"one-help/app/users/auth"
 )
 
 var logger = log.Default()
@@ -71,6 +72,11 @@ func (db *database) ExecuteMigrations(migrationsPath string, isUp bool) (err err
 // Users provides access to users.DB.
 func (db *database) Users() users.DB {
 	return newUsersDB(db.conn)
+}
+
+// Credentials provides access to auth.DB.
+func (db *database) Credentials() auth.DB {
+	return newUserCredentialsDB(db.conn)
 }
 
 // Close closes underlying db connection.
