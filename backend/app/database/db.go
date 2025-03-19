@@ -12,6 +12,7 @@ import (
 	"github.com/zeebo/errs"
 
 	"one-help/app"
+	"one-help/app/posts"
 	"one-help/app/users"
 )
 
@@ -71,6 +72,11 @@ func (db *database) ExecuteMigrations(migrationsPath string, isUp bool) (err err
 // Users provides access to users.DB.
 func (db *database) Users() users.DB {
 	return newUsersDB(db.conn)
+}
+
+// Posts provides access to posts.DB.
+func (db *database) Posts() posts.DB {
+	return newPostsDB(db.conn)
 }
 
 // Close closes underlying db connection.
