@@ -1,6 +1,7 @@
 package app
 
 import (
+	fundraisestatuses "one-help/app/fundraise_statuses"
 	"one-help/app/posts"
 	"one-help/app/users"
 )
@@ -17,6 +18,9 @@ type DB interface {
 
 	// Posts provides access to posts.DB.
 	Posts() posts.DB
+
+	// FundraiseStatuses provides access to fundraise statuses DB.
+	FundraiseStatuses() fundraisestatuses.DB
 
 	// ExecuteMigrations applies migrations for the database.
 	ExecuteMigrations(migrationsPath string, isUp bool) (err error)
