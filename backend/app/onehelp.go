@@ -1,6 +1,7 @@
 package app
 
 import (
+	"one-help/app/posts"
 	"one-help/app/users"
 )
 
@@ -13,6 +14,9 @@ type DB interface {
 
 	// Users provides access to users.DB.
 	Users() users.DB
+
+	// Posts provides access to posts.DB.
+	Posts() posts.DB
 
 	// ExecuteMigrations applies migrations for the database.
 	ExecuteMigrations(migrationsPath string, isUp bool) (err error)
