@@ -2,13 +2,14 @@ package database_test
 
 import (
 	"context"
-	"one-help/app"
-	"one-help/app/database"
-	"one-help/app/database/dbtesting"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"one-help/app"
+	"one-help/app/database"
+	"one-help/app/database/dbtesting"
 )
 
 func TestFundraiseStatuses(t *testing.T) {

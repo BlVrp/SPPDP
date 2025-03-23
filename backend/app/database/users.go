@@ -67,7 +67,6 @@ func (db *usersDB) Get(ctx context.Context, id uuid.UUID) (users.User, error) {
 	query := `SELECT u.user_id, first_name, last_name, website, file_name, city, post, post_department
               FROM users u LEFT JOIN delivery_addresses d ON u.user_id = d.user_id
               WHERE u.user_id = $1`
-
 	row := db.conn.QueryRowContext(ctx, query, id)
 	err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Website, &user.FileName, &city, &post, &postDepartment)
 	if err != nil {

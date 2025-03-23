@@ -12,9 +12,10 @@ import (
 	"github.com/zeebo/errs"
 
 	"one-help/app"
-	fundraisestatuses "one-help/app/fundraise_statuses"
+	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/posts"
 	"one-help/app/users"
+	"one-help/app/users/credentials"
 )
 
 var logger = log.Default()
@@ -73,6 +74,11 @@ func (db *database) ExecuteMigrations(migrationsPath string, isUp bool) (err err
 // Users provides access to users.DB.
 func (db *database) Users() users.DB {
 	return newUsersDB(db.conn)
+}
+
+// Credentials provides access to credentials.DB.
+func (db *database) Credentials() credentials.DB {
+	return newUserCredentialsDB(db.conn)
 }
 
 // Posts provides access to posts.DB.

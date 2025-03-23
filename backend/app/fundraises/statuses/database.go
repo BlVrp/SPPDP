@@ -1,4 +1,4 @@
-package fundraisestatuses
+package statuses
 
 import (
 	"context"

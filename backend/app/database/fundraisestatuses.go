@@ -3,9 +3,10 @@ package database
 import (
 	"context"
 	"database/sql"
-	fundraisestatuses "one-help/app/fundraise_statuses"
 
 	"github.com/zeebo/errs"
+
+	fundraisestatuses "one-help/app/fundraises/statuses"
 )
 
 // ErrFundraiseStatuses indicates that there was an error in the database.
@@ -59,12 +60,12 @@ func (db *fundraiseStatusesDB) List(ctx context.Context) ([]string, error) {
 		return nil, ErrFundraiseStatuses.Wrap(err)
 	}
 
-	defer rows.Close()
+	defer func() { err = errs.Combine(err, rows.Close()) }()
 
 	var statuses []string
 	for rows.Next() {
 		var status string
-		if err := rows.Scan(&status); err != nil {
+		if err = rows.Scan(&status); err != nil {
 			return nil, ErrFundraiseStatuses.Wrap(err)
 		}
 

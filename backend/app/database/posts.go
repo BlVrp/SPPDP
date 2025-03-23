@@ -3,9 +3,10 @@ package database
 import (
 	"context"
 	"database/sql"
-	"one-help/app/posts"
 
 	"github.com/zeebo/errs"
+
+	"one-help/app/posts"
 )
 
 // ErrPosts indicates that there was an error in the database.
@@ -59,12 +60,12 @@ func (db *postsDB) List(ctx context.Context) ([]string, error) {
 		return nil, ErrPosts.Wrap(err)
 	}
 
-	defer rows.Close()
+	defer func() { err = errs.Combine(err, rows.Close()) }()
 
 	var posts []string
 	for rows.Next() {
 		var post string
-		if err := rows.Scan(&post); err != nil {
+		if err = rows.Scan(&post); err != nil {
 			return nil, ErrPosts.Wrap(err)
 		}
 
