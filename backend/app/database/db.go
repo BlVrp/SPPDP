@@ -12,6 +12,8 @@ import (
 	"github.com/zeebo/errs"
 
 	"one-help/app"
+	fundraisestatuses "one-help/app/fundraises/statuses"
+	"one-help/app/posts"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
 )
@@ -77,6 +79,16 @@ func (db *database) Users() users.DB {
 // Credentials provides access to credentials.DB.
 func (db *database) Credentials() credentials.DB {
 	return newUserCredentialsDB(db.conn)
+}
+
+// Posts provides access to posts.DB.
+func (db *database) Posts() posts.DB {
+	return newPostsDB(db.conn)
+}
+
+// FundraiseStatuses provides access to fundraise statuses DB.
+func (db *database) FundraiseStatuses() fundraisestatuses.DB {
+	return newFundraiseStatusesDB(db.conn)
 }
 
 // Close closes underlying db connection.
