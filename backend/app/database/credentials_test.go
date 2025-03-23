@@ -12,7 +12,7 @@ import (
 	"one-help/app/database"
 	"one-help/app/database/dbtesting"
 	"one-help/app/users"
-	"one-help/app/users/auth"
+	"one-help/app/users/credentials"
 )
 
 func TestUserCredentials(t *testing.T) {
@@ -26,13 +26,13 @@ func TestUserCredentials(t *testing.T) {
 		FirstName: "Jane",
 		LastName:  "Doe",
 	}
-	creds := auth.Credentials{
+	creds := credentials.Credentials{
 		UserID:       user.ID,
 		Email:        "john.doe@example.com",
 		PhoneNumber:  "1234567890",
 		PasswordHash: "hashhashhash",
 	}
-	creds2 := auth.Credentials{
+	creds2 := credentials.Credentials{
 		UserID:       user2.ID,
 		Email:        "jane.doe@example.com",
 		PhoneNumber:  "0987654321",
@@ -52,25 +52,25 @@ func TestUserCredentials(t *testing.T) {
 			err := credsRepository.Create(ctx, creds)
 			require.NoError(t, err)
 
-			storedCreds, err := credsRepository.Get(ctx, auth.NewGetByID(creds.UserID))
+			storedCreds, err := credsRepository.Get(ctx, credentials.NewGetByID(creds.UserID))
 			require.NoError(t, err)
 			assert.Equal(t, creds, storedCreds)
 		})
 
 		t.Run("Get(negative)", func(t *testing.T) {
-			_, err := credsRepository.Get(ctx, auth.NewGetByID(uuid.New()))
+			_, err := credsRepository.Get(ctx, credentials.NewGetByID(uuid.New()))
 			require.Error(t, err)
-			require.ErrorIs(t, err, auth.ErrNoUserCredentials)
+			require.ErrorIs(t, err, credentials.ErrNoUserCredentials)
 		})
 
 		t.Run("Get by Email", func(t *testing.T) {
-			storedCreds, err := credsRepository.Get(ctx, auth.NewGetByEmail(creds.Email))
+			storedCreds, err := credsRepository.Get(ctx, credentials.NewGetByEmail(creds.Email))
 			require.NoError(t, err)
 			assert.Equal(t, creds, storedCreds)
 		})
 
 		t.Run("Get by PhoneNumber", func(t *testing.T) {
-			storedCreds, err := credsRepository.Get(ctx, auth.NewGetByPhoneNumber(creds.PhoneNumber))
+			storedCreds, err := credsRepository.Get(ctx, credentials.NewGetByPhoneNumber(creds.PhoneNumber))
 			require.NoError(t, err)
 			assert.Equal(t, creds, storedCreds)
 		})
@@ -78,7 +78,7 @@ func TestUserCredentials(t *testing.T) {
 		t.Run("Create with existing user credentials", func(t *testing.T) {
 			err := credsRepository.Create(ctx, creds)
 			require.Error(t, err)
-			require.ErrorIs(t, err, auth.ErrUserAlreadyHasCredentials)
+			require.ErrorIs(t, err, credentials.ErrUserAlreadyHasCredentials)
 		})
 
 		t.Run("Create with existing email", func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestUserCredentials(t *testing.T) {
 
 			err := credsRepository.Create(ctx, existingCreds)
 			require.Error(t, err)
-			require.ErrorIs(t, err, auth.ErrUserEmailTaken)
+			require.ErrorIs(t, err, credentials.ErrUserEmailTaken)
 		})
 
 		t.Run("Create with existing phone number", func(t *testing.T) {
@@ -96,7 +96,7 @@ func TestUserCredentials(t *testing.T) {
 
 			err := credsRepository.Create(ctx, existingCreds)
 			require.Error(t, err)
-			require.ErrorIs(t, err, auth.ErrUserPhoneNumberTaken)
+			require.ErrorIs(t, err, credentials.ErrUserPhoneNumberTaken)
 		})
 
 		t.Run("Create second creds", func(t *testing.T) {
@@ -109,7 +109,7 @@ func TestUserCredentials(t *testing.T) {
 
 			err := credsRepository.Update(ctx, existingCreds)
 			require.Error(t, err)
-			require.ErrorIs(t, err, auth.ErrUserEmailTaken)
+			require.ErrorIs(t, err, credentials.ErrUserEmailTaken)
 		})
 
 		t.Run("Update with existing phone number", func(t *testing.T) {
@@ -118,21 +118,21 @@ func TestUserCredentials(t *testing.T) {
 
 			err := credsRepository.Update(ctx, existingCreds)
 			require.Error(t, err)
-			require.ErrorIs(t, err, auth.ErrUserPhoneNumberTaken)
+			require.ErrorIs(t, err, credentials.ErrUserPhoneNumberTaken)
 		})
 
 		t.Run("Update", func(t *testing.T) {
 			creds.Email = "john.doe@newemail.com"
 			creds.PhoneNumber = "5555555555"
 
-			storedCreds, err := credsRepository.Get(ctx, auth.NewGetByID(creds.UserID))
+			storedCreds, err := credsRepository.Get(ctx, credentials.NewGetByID(creds.UserID))
 			require.NoError(t, err)
 			assert.NotEqual(t, creds, storedCreds)
 
 			err = credsRepository.Update(ctx, creds)
 			require.NoError(t, err)
 
-			storedCreds, err = credsRepository.Get(ctx, auth.NewGetByID(creds.UserID))
+			storedCreds, err = credsRepository.Get(ctx, credentials.NewGetByID(creds.UserID))
 			require.NoError(t, err)
 			assert.Equal(t, creds, storedCreds)
 		})

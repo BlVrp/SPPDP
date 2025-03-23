@@ -6,7 +6,9 @@ import (
 
 // Config defines configuration for users.
 type Config struct {
-	TokenAuthSecret string `env:"TOKEN_AUTH_SECRET"`
+	TokenAuthSecret   string `env:"TOKEN_AUTH_SECRET"`
+	EmailRegExp       string `env:"EMAIL_REGEXP"`
+	PhoneNumberRegExp string `env:"PHONE_NUMBER_REGEXP"`
 }
 
 // User describes user entity.
@@ -43,4 +45,26 @@ func (u *User) IsDeliveryAddressEmpty() bool {
 // EmptyDeliveryAddress clear delivery address.
 func (u *User) EmptyDeliveryAddress() {
 	u.DeliveryAddress = DeliveryAddress{}
+}
+
+// RegisterParams holds parameters needed to register new user.
+type RegisterParams struct {
+	FirstName string
+	LastName  string
+	Website   string
+	FileName  string
+
+	City           string
+	Post           string
+	PostDepartment string
+
+	PhoneNumber string
+	Email       string
+	Password    string
+}
+
+// AuthorizeParams holds parameters needed to authorize user.
+type AuthorizeParams struct {
+	Identifier string // INFO: email of phone number.
+	Password   string
 }

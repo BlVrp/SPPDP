@@ -13,7 +13,7 @@ import (
 
 	"one-help/app"
 	"one-help/app/users"
-	"one-help/app/users/auth"
+	"one-help/app/users/credentials"
 )
 
 var logger = log.Default()
@@ -74,8 +74,8 @@ func (db *database) Users() users.DB {
 	return newUsersDB(db.conn)
 }
 
-// Credentials provides access to auth.DB.
-func (db *database) Credentials() auth.DB {
+// Credentials provides access to credentials.DB.
+func (db *database) Credentials() credentials.DB {
 	return newUserCredentialsDB(db.conn)
 }
 
