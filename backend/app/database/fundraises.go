@@ -50,9 +50,9 @@ func (db *fundraisesDB) Get(ctx context.Context, id uuid.UUID) (fundraises.Fundr
 		endDate   sql.NullTime
 	)
 
-	query := `SELECT id, organizer_id, title, description, target_amount, start_date, end_date, status
+	query := `SELECT fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status
               FROM fundraises
-              WHERE id = $1`
+              WHERE fundraise_id = $1`
 
 	row := db.conn.QueryRowContext(ctx, query, id)
 	err := row.Scan(
