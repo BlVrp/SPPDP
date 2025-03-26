@@ -1,10 +1,11 @@
 package app
 
 import (
-	fundraisestatuses "one-help/app/fundraise_statuses"
 	"one-help/app/fundraises"
+	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/posts"
 	"one-help/app/users"
+	"one-help/app/users/credentials"
 )
 
 // DB provides access to all databases and database related functionality.
@@ -16,6 +17,9 @@ type DB interface {
 
 	// Users provides access to users.DB.
 	Users() users.DB
+
+	// Credentials provides access to credentials.DB.
+	Credentials() credentials.DB
 
 	// Posts provides access to posts.DB.
 	Posts() posts.DB

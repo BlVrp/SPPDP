@@ -1,4 +1,4 @@
-package auth
+package credentials
 
 import (
 	"context"
@@ -10,17 +10,19 @@ import (
 var (
 	// ErrNoUserCredentials indicates that user's credentials does not exist.
 	ErrNoUserCredentials = errs.New("user credentials does not exist")
+	// ErrUserAlreadyHasCredentials indicates that user's credentials already exists.
+	ErrUserAlreadyHasCredentials = errs.New("user credentials already exists")
 	// ErrUserEmailTaken indicates that such email already exists.
 	ErrUserEmailTaken = errs.New("email is already taken")
 	// ErrUserPhoneNumberTaken indicates that such phone number already exists.
 	ErrUserPhoneNumberTaken = errs.New("phone number is already taken")
 )
 
-// DB exposes access to users db.
+// DB exposes access to user credentials db.
 //
 // architecture: DB
 type DB interface {
-	// Create inserts user into the database.
+	// Create inserts user's credentials into the database.
 	Create(ctx context.Context, creds Credentials) error
 	// Get returns user's credentials from the database by user's ID.
 	Get(ctx context.Context, key GetKey) (Credentials, error)
