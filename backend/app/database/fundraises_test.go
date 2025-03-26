@@ -6,6 +6,7 @@ import (
 	"one-help/app/database"
 	"one-help/app/database/dbtesting"
 	"one-help/app/fundraises"
+	"one-help/app/users"
 	"testing"
 	"time"
 
@@ -15,24 +16,40 @@ import (
 )
 
 func TestFundraises(t *testing.T) {
+	user := users.User{
+		ID:        uuid.New(),
+		FirstName: "John",
+		LastName:  "Doe",
+		Website:   "https://example.com",
+		FileName:  "john_doe.txt",
+	}
+
+	fundraiseStatus := "Active"
+
 	fundraise := fundraises.Fundraise{
 		ID:           uuid.New(),
+		OrganizerId:  user.ID,
 		Title:        "Test",
 		Description:  "Test Description",
 		TargetAmount: 234.4,
 		StartDate:    time.Now(),
 		EndDate:      time.Time{},
-		Status:       "Active",
+		Status:       fundraiseStatus,
 	}
+
 	dbtesting.Run(t, database.Config{}, func(ctx context.Context, t *testing.T, db app.DB) {
 		fundraiseRepository := db.Fundraises()
+		usersRepository := db.Users()
+		fundraiseStatusesRepository := db.FundraiseStatuses()
 		t.Run("Create&Get", func(t *testing.T) {
+			fundraiseStatusesRepository.Create(ctx, fundraiseStatus)
+			usersRepository.Create(ctx, user)
 			err := fundraiseRepository.Create(ctx, fundraise)
 			require.NoError(t, err)
 
 			storedFundraise, err := fundraiseRepository.Get(ctx, fundraise.ID)
 			require.NoError(t, err)
-			assert.Equal(t, fundraise, storedFundraise)
+			fundraisesAreEqual(t, fundraise, storedFundraise)
 		})
 
 		t.Run("Get(negative)", func(t *testing.T) {
@@ -55,13 +72,13 @@ func TestFundraises(t *testing.T) {
 
 			storedFundraise, err = fundraiseRepository.Get(ctx, fundraise.ID)
 			require.NoError(t, err)
-			assert.Equal(t, fundraise, storedFundraise)
+			fundraisesAreEqual(t, fundraise, storedFundraise)
 		})
 
 		t.Run("List", func(t *testing.T) {
 			storedFundraises, err := fundraiseRepository.List(ctx)
 			require.NoError(t, err)
-			assert.Equal(t, fundraise, storedFundraises[0])
+			fundraisesAreEqual(t, fundraise, storedFundraises[0])
 			assert.Equal(t, 1, len(storedFundraises))
 		})
 
@@ -74,4 +91,13 @@ func TestFundraises(t *testing.T) {
 			assert.ErrorIs(t, err, fundraises.ErrNoFundraise)
 		})
 	})
+}
+
+func fundraisesAreEqual(t *testing.T, expected, actual fundraises.Fundraise) {
+	assert.Equal(t, expected.ID, actual.ID)
+	assert.Equal(t, expected.OrganizerId, actual.OrganizerId)
+	assert.Equal(t, expected.Title, actual.Title)
+	assert.Equal(t, expected.Description, actual.Description)
+	assert.Equal(t, expected.TargetAmount, actual.TargetAmount)
+	assert.Equal(t, expected.Status, actual.Status)
 }

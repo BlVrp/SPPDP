@@ -83,7 +83,7 @@ func (db *fundraisesDB) Get(ctx context.Context, id uuid.UUID) (fundraises.Fundr
 
 // List returns all the fundraises.
 func (db *fundraisesDB) List(ctx context.Context) ([]fundraises.Fundraise, error) {
-	query := `SELECT id, organizer_id, title, description, target_amount, start_date, end_date, status
+	query := `SELECT fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status
               FROM fundraises`
 	rows, err := db.conn.QueryContext(ctx, query)
 	if err != nil {
@@ -135,7 +135,7 @@ func (db *fundraisesDB) Update(ctx context.Context, fundraise fundraises.Fundrai
 
 	query := `UPDATE fundraises
 	          SET organizer_id = $2, title = $3, description = $4, target_amount = $5, start_date = $6, end_date = $7, status = $8
-	          WHERE id = $1`
+	          WHERE fundraise_id = $1`
 
 	var endDate interface{}
 	if fundraise.EndDate.IsZero() {
