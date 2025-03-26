@@ -22,6 +22,7 @@ func TestPosts(t *testing.T) {
 			storedPosts, err := postsRepository.List(ctx)
 			require.NoError(t, err)
 			assert.Equal(t, post, storedPosts[0])
+			assert.Equal(t, 1, len(storedPosts))
 		})
 
 		t.Run("Delete", func(t *testing.T) {

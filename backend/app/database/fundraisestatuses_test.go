@@ -22,6 +22,7 @@ func TestFundraiseStatuses(t *testing.T) {
 			storedStatuses, err := fundraiseStatusesRepository.List(ctx)
 			require.NoError(t, err)
 			assert.Equal(t, status, storedStatuses[0])
+			assert.Equal(t, 1, len(storedStatuses))
 		})
 
 		t.Run("Delete", func(t *testing.T) {
