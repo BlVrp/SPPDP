@@ -1,6 +1,7 @@
 package app
 
 import (
+	"one-help/app/donations"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/posts"
@@ -29,6 +30,9 @@ type DB interface {
 
 	// Fundraises provides access to fundraises DB.
 	Fundraises() fundraises.DB
+
+	// Donations provides access to donations DB.
+	Donations() donations.DB
 
 	// ExecuteMigrations applies migrations for the database.
 	ExecuteMigrations(migrationsPath string, isUp bool) (err error)
