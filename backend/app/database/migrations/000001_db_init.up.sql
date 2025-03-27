@@ -54,12 +54,17 @@ FOREIGN KEY(user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE NO AC
 FOREIGN KEY(fundraise_id) REFERENCES fundraises(fundraise_id) ON UPDATE CASCADE ON DELETE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS payment_types(
+type VARCHAR PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS payments (
 donation_id    UUID    PRIMARY KEY NOT NULL,
 payment_type   VARCHAR             NOT NULL,
 transaction_id VARCHAR             NOT NULL,
 confirmed      BOOLEAN             NOT NULL,
-FOREIGN KEY(donation_id) REFERENCES donations(donation_id) ON UPDATE CASCADE ON DELETE CASCADE
+FOREIGN KEY(donation_id) REFERENCES donations(donation_id) ON UPDATE CASCADE ON DELETE CASCADE,
+FOREIGN KEY(payment_type) REFERENCES payment_types(type) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS proofs (

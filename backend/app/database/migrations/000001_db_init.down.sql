@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS raffles;
 DROP TABLE IF EXISTS proof_images;
 DROP TABLE IF EXISTS proofs;
 DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS payment_types;
 DROP TABLE IF EXISTS donations;
 DROP TABLE IF EXISTS fundraises;
 DROP TABLE IF EXISTS fundraise_statuses;

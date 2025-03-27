@@ -4,14 +4,14 @@ import (
 	"context"
 )
 
-// DB exposes access to posts db.
+// DB exposes access to fundraise statuses db.
 //
 // architecture: DB
 type DB interface {
-	// List returns all available posts.
+	// List returns all available fundraise statuses.
 	List(ctx context.Context) ([]string, error)
-	// Create inserts post into the database.
+	// Create inserts fundraise status into the database.
 	Create(ctx context.Context, post string) error
-	// Delete post from the database.
+	// Delete fundraise status from the database.
 	Delete(ctx context.Context, post string) error
 }

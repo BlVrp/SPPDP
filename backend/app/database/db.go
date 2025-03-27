@@ -12,8 +12,11 @@ import (
 	"github.com/zeebo/errs"
 
 	"one-help/app"
+	"one-help/app/donations"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
+	"one-help/app/payments"
+	paymenttypes "one-help/app/payments/types"
 	"one-help/app/posts"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
@@ -92,9 +95,24 @@ func (db *database) FundraiseStatuses() fundraisestatuses.DB {
 	return newFundraiseStatusesDB(db.conn)
 }
 
-// FundraiseStatuses provides access to fundraise statuses DB.
+// Fundraises provides access to fundraises DB.
 func (db *database) Fundraises() fundraises.DB {
 	return newFundraisesDB(db.conn)
+}
+
+// Donations provides access to donations DB.
+func (db *database) Donations() donations.DB {
+	return newDonationsDB(db.conn)
+}
+
+// PaymentTypes provides access to payment types DB.
+func (db *database) PaymentTypes() paymenttypes.DB {
+	return newPaymentTypesDB(db.conn)
+}
+
+// Payments provides access to payments DB.
+func (db *database) Payments() payments.DB {
+	return newPaymentsDB(db.conn)
 }
 
 // Close closes underlying db connection.

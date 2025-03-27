@@ -126,6 +126,7 @@ func (db *fundraisesDB) List(ctx context.Context) ([]fundraises.Fundraise, error
 	return fundraisesList, nil
 }
 
+// Update updates fundraise in database by id.
 func (db *fundraisesDB) Update(ctx context.Context, fundraise fundraises.Fundraise) error {
 	tx, err := db.conn.BeginTx(ctx, nil)
 	if err != nil {
