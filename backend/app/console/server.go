@@ -87,6 +87,8 @@ func NewServer(
 	usersRouter.Use(server.jsonResponse)
 	usersRouter.StrictSlash(true)
 	usersRouter.Handle("/", server.withAuth(http.HandlerFunc(usersController.Get), false)).Methods(http.MethodGet, http.MethodOptions)
+	usersRouter.Handle("/change-password", server.withAuth(http.HandlerFunc(usersController.ChangePassword), false)).Methods(http.MethodPatch, http.MethodOptions)
+	usersRouter.Handle("/{id}", server.withAuth(http.HandlerFunc(usersController.GetByID), true)).Methods(http.MethodGet, http.MethodOptions)
 
 	apiRouter.PathPrefix("/docs/swagger/").Handler(httpswagger.WrapHandler)
 

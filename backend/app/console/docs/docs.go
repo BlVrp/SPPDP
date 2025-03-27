@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/login": {
+        "/auth/login/": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -51,6 +51,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/common.ErrResponseCode"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -66,7 +72,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register": {
+        "/auth/register/": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -175,6 +181,100 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/change-password/": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update user's password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token to authorize access",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Update password fields",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/users.UpdatePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Provides user public info by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token to authorize access",
+                        "name": "Authorization",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/users.UserPublicView"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -248,6 +348,40 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "postDepartment": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "users.UpdatePasswordRequest": {
+            "type": "object",
+            "properties": {
+                "newPass": {
+                    "type": "string"
+                },
+                "oldPass": {
+                    "type": "string"
+                }
+            }
+        },
+        "users.UserPublicView": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastName": {
                     "type": "string"
                 },
                 "website": {

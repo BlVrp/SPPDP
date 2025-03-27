@@ -28,27 +28,17 @@ type AuthResponse struct {
 
 // UserView defines user view type.
 type UserView struct {
-	ID             uuid.UUID `json:"id"`
-	FirstName      string    `json:"firstName"`
-	LastName       string    `json:"lastName"`
-	Website        string    `json:"website"`
-	FileName       string    `json:"fileName"`
-	City           string    `json:"city"`
-	Post           string    `json:"post"`
-	PostDepartment string    `json:"postDepartment"`
-	PhoneNumber    string    `json:"phoneNumber"`
-	Email          string    `json:"email"`
+	*UserPublicView
+	Post           string `json:"post"`
+	PostDepartment string `json:"postDepartment"`
+	PhoneNumber    string `json:"phoneNumber"`
+	Email          string `json:"email"`
 }
 
 // ToUserView builds user view.
 func ToUserView(user *users.User, userCreds *credentials.Credentials) *UserView {
 	return &UserView{
-		ID:             user.ID,
-		FirstName:      user.FirstName,
-		LastName:       user.LastName,
-		Website:        user.Website,
-		FileName:       user.FileName,
-		City:           user.City,
+		UserPublicView: ToUserPublicView(user),
 		Post:           user.Post,
 		PostDepartment: user.PostDepartment,
 		PhoneNumber:    userCreds.PhoneNumber,
@@ -60,4 +50,32 @@ func ToUserView(user *users.User, userCreds *credentials.Credentials) *UserView 
 type LoginRequest struct {
 	Identifier string `json:"identifier"` // INFO: Email or phone number.
 	Password   string `json:"password"`
+}
+
+// UpdatePasswordRequest defines request values for change password endpoint.
+type UpdatePasswordRequest struct {
+	OldPass string `json:"oldPass"`
+	NewPass string `json:"newPass"`
+}
+
+// UserPublicView defines user public view type.
+type UserPublicView struct {
+	ID        uuid.UUID `json:"id"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Website   string    `json:"website"`
+	FileName  string    `json:"fileName"`
+	City      string    `json:"city"`
+}
+
+// ToUserPublicView builds user public view.
+func ToUserPublicView(user *users.User) *UserPublicView {
+	return &UserPublicView{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Website:   user.Website,
+		FileName:  user.FileName,
+		City:      user.City,
+	}
 }

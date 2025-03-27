@@ -22,7 +22,7 @@ var (
 	ParamsError = errs.Class("users service: params")
 )
 
-// Service is handling users related logic.
+// Service handles users related logic.
 //
 // architecture: Service
 type Service struct {

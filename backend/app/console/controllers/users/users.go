@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/zeebo/errs"
 
 	"one-help/app/console/controllers/common"
@@ -43,7 +45,7 @@ func NewUsers(log logger.Logger, users *users.Service) *Users {
 // @Param	request	body	RegisterRequest	true	"Register request fields"
 // @Success	200		{object}	AuthResponse
 // @Failure	400,500	{object}	common.ErrResponseCode
-// @Router	/auth/register	[post].
+// @Router	/auth/register/	[post].
 func (controller *Users) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -104,8 +106,8 @@ func (controller *Users) Register(w http.ResponseWriter, r *http.Request) {
 // @Produce	json
 // @Param	request	body	LoginRequest	true	"Login request fields"
 // @Success	200			{object}	AuthResponse
-// @Failure	400,404,500	{object}	common.ErrResponseCode
-// @Router	/auth/login	[post].
+// @Failure	400,403,404,500	{object}	common.ErrResponseCode
+// @Router	/auth/login/	[post].
 func (controller *Users) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -186,6 +188,89 @@ func (controller *Users) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = json.NewEncoder(w).Encode(ToUserView(user, creds)); err != nil {
+		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, err).Serve(controller.log, ErrUsers, w)
+		return
+	}
+}
+
+// GetByID is an endpoint for getting user public info by id.
+// @Summary	Provides user public info by id
+// @Tags	Users
+// @Produce	json
+// @Param	Authorization	header	string	false	"Bearer token to authorize access"
+// @Success	200		{object}	UserPublicView
+// @Failure 400,404,500	{object}	common.ErrResponseCode
+// @Router	/users/{id}/	[get].
+func (controller *Users) GetByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		common.NewErrResponse(http.StatusBadRequest, errs.New("failed to parse id")).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	user, err := controller.users.Get(ctx, userID)
+	if err != nil {
+		controller.log.Error("failed to get user by id", ErrUsers.Wrap(err))
+		if errors.Is(err, users.ErrNoUser) {
+			common.NewErrResponse(http.StatusNotFound, users.ErrNoUser).Serve(controller.log, ErrUsers, w)
+			return
+		}
+
+		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to get user by id")).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(ToUserPublicView(user)); err != nil {
+		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, err).Serve(controller.log, ErrUsers, w)
+		return
+	}
+}
+
+// ChangePassword is an endpoint for changing user's password.
+// @Summary	Update user's password
+// @Tags	Users
+// @Produce	json
+// @Accept	json
+// @Param	Authorization	header	string	true	"Bearer token to authorize access"
+// @Param	request	body	UpdatePasswordRequest	true	"Update password fields"
+// @Success	200
+// @Failure	401,500	{object}	common.ErrResponseCode
+// @Router	/users/change-password/	[patch].
+func (controller *Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	creds, err := credentials.GetIntoContext(ctx)
+	if err != nil {
+		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	var request UpdatePasswordRequest
+	if err = json.NewDecoder(r.Body).Decode(&request); err != nil {
+		controller.log.Error("failed to decode change password request", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusBadRequest, err).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	err = controller.users.UpdatePassword(ctx, creds.UserID, request.OldPass, request.NewPass)
+	if err != nil {
+		controller.log.Error("failed to update user's password", ErrUsers.Wrap(err))
+		switch {
+		case errors.Is(err, users.ErrNoUser):
+			common.NewErrResponse(http.StatusNotFound, users.ErrNoUser).Serve(controller.log, ErrUsers, w)
+		case users.ParamsError.Has(err):
+			common.NewErrResponse(http.StatusForbidden, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		default:
+			common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to get user by id")).Serve(controller.log, ErrUsers, w)
+		}
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(nil); err != nil {
 		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
 		common.NewErrResponse(http.StatusInternalServerError, err).Serve(controller.log, ErrUsers, w)
 		return
