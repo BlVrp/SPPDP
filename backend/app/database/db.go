@@ -15,6 +15,7 @@ import (
 	"one-help/app/donations"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
+	paymenttypes "one-help/app/payments/types"
 	"one-help/app/posts"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
@@ -101,6 +102,11 @@ func (db *database) Fundraises() fundraises.DB {
 // Donations provides access to donations DB.
 func (db *database) Donations() donations.DB {
 	return newDonationsDB(db.conn)
+}
+
+// PaymentTypes provides access to payment types DB.
+func (db *database) PaymentTypes() paymenttypes.DB {
+	return newPaymentTypesDB(db.conn)
 }
 
 // Close closes underlying db connection.

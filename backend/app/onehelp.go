@@ -4,6 +4,7 @@ import (
 	"one-help/app/donations"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
+	paymenttypes "one-help/app/payments/types"
 	"one-help/app/posts"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
@@ -33,6 +34,9 @@ type DB interface {
 
 	// Donations provides access to donations DB.
 	Donations() donations.DB
+
+	// PaymentTypes provides access to payment types DB.
+	PaymentTypes() paymenttypes.DB
 
 	// ExecuteMigrations applies migrations for the database.
 	ExecuteMigrations(migrationsPath string, isUp bool) (err error)
