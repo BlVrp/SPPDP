@@ -135,5 +135,5 @@ func (db *donationsDB) Update(ctx context.Context, donation donations.Donation) 
 func (db *donationsDB) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM donations WHERE donation_id = $1`
 	_, err := db.conn.ExecContext(ctx, query, id)
-	return ErrFundraises.Wrap(err)
+	return ErrDonations.Wrap(err)
 }
