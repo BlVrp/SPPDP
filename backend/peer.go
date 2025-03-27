@@ -9,6 +9,8 @@ import (
 
 	"one-help/app"
 	"one-help/app/console"
+	"one-help/app/users"
+	"one-help/app/users/credentials"
 	"one-help/internal/logger"
 )
 
@@ -16,6 +18,9 @@ import (
 type Config struct {
 	Console struct {
 		Config console.Config
+	}
+	Users struct {
+		Config users.Config `envPrefix:"USERS_"`
 	}
 }
 
@@ -30,6 +35,12 @@ type Peer struct {
 		Listener net.Listener
 		Endpoint *console.Server
 	}
+
+	Users struct {
+		CredsDB credentials.DB
+		DB      users.DB
+		Service *users.Service
+	}
 }
 
 // New is a constructor for peer.
@@ -38,6 +49,13 @@ func New(ctx context.Context, logger logger.Logger, config Config, db app.DB) (p
 		Log:      logger,
 		Database: db,
 		Config:   config,
+	}
+
+	// users setup
+	{
+		peer.Users.CredsDB = db.Credentials()
+		peer.Users.DB = db.Users()
+		peer.Users.Service = users.NewService(peer.Log, peer.Config.Users.Config, peer.Users.DB, peer.Users.CredsDB)
 	}
 
 	// console setup
@@ -51,6 +69,7 @@ func New(ctx context.Context, logger logger.Logger, config Config, db app.DB) (p
 			config.Console.Config,
 			peer.Log,
 			peer.Console.Listener,
+			peer.Users.Service,
 		)
 	}
 

@@ -2,13 +2,14 @@ package database_test
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"one-help/app"
 	"one-help/app/database"
 	"one-help/app/database/dbtesting"
 	"one-help/app/fundraises"
 	"one-help/app/users"
-	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -42,10 +43,9 @@ func TestFundraises(t *testing.T) {
 		usersRepository := db.Users()
 		fundraiseStatusesRepository := db.FundraiseStatuses()
 		t.Run("Create&Get", func(t *testing.T) {
-			fundraiseStatusesRepository.Create(ctx, fundraiseStatus)
-			usersRepository.Create(ctx, user)
-			err := fundraiseRepository.Create(ctx, fundraise)
-			require.NoError(t, err)
+			require.NoError(t, fundraiseStatusesRepository.Create(ctx, fundraiseStatus))
+			require.NoError(t, usersRepository.Create(ctx, user))
+			require.NoError(t, fundraiseRepository.Create(ctx, fundraise))
 
 			storedFundraise, err := fundraiseRepository.Get(ctx, fundraise.ID)
 			require.NoError(t, err)

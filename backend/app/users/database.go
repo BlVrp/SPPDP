@@ -10,6 +10,8 @@ import (
 var (
 	// ErrNoUser indicates that user does not exist.
 	ErrNoUser = errs.New("user does not exist")
+	// ErrInvalidPassword indicates that invalid password was provided.
+	ErrInvalidPassword = errs.New("invalid password")
 )
 
 // DB exposes access to users db.
