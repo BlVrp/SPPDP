@@ -22,7 +22,7 @@ var (
 	ParamsError = errs.Class("users service: params")
 )
 
-// Service is handling users related logic.
+// Service handles users related logic.
 //
 // architecture: Service
 type Service struct {
@@ -39,7 +39,7 @@ type Service struct {
 }
 
 // NewService is a constructor for users service.
-func NewService(logger logger.Logger, config Config, users DB, creds credentials.DB) (*Service, error) {
+func NewService(logger logger.Logger, config Config, users DB, creds credentials.DB) *Service {
 	return &Service{
 		logger:       logger,
 		config:       config,
@@ -48,7 +48,7 @@ func NewService(logger logger.Logger, config Config, users DB, creds credentials
 		tokenizer:    jwt.NewHS256[credentials.Credentials]([]byte(config.TokenAuthSecret)),
 		emailChecker: regexp.MustCompile(config.EmailRegExp),
 		phoneChecker: regexp.MustCompile(config.PhoneNumberRegExp),
-	}, nil
+	}
 }
 
 // Register created new User data in the system.
@@ -119,7 +119,7 @@ func (service *Service) Authorize(ctx context.Context, params AuthorizeParams) (
 	}
 
 	if creds.PasswordHash != service.hashPassword(params.Password) {
-		return nil, ParamsError.New("invalid password")
+		return nil, ParamsError.Wrap(ErrInvalidPassword)
 	}
 
 	user, err := service.users.Get(ctx, creds.UserID)
@@ -149,17 +149,31 @@ func (service *Service) Update(ctx context.Context, user User) error {
 }
 
 // Get returns User by ID.
-func (service *Service) Get(ctx context.Context, id uuid.UUID) (User, error) {
+func (service *Service) Get(ctx context.Context, id uuid.UUID) (*User, error) {
 	user, err := service.users.Get(ctx, id)
 	if err != nil {
 		if errors.Is(err, ErrNoUser) {
-			return User{}, ParamsError.Wrap(ErrNoUser)
+			return nil, ParamsError.Wrap(ErrNoUser)
 		}
 
-		return User{}, Error.Wrap(err)
+		return nil, Error.Wrap(err)
 	}
 
-	return user, nil
+	return &user, nil
+}
+
+// GetCreds returns User creds by ID.
+func (service *Service) GetCreds(ctx context.Context, id uuid.UUID) (*credentials.Credentials, error) {
+	creds, err := service.credentials.Get(ctx, credentials.NewGetByID(id))
+	if err != nil {
+		if errors.Is(err, credentials.ErrNoUserCredentials) {
+			return nil, ParamsError.Wrap(ErrNoUser)
+		}
+
+		return nil, Error.Wrap(err)
+	}
+
+	return &creds, nil
 }
 
 // UpdatePassword updated user password.
@@ -211,22 +225,32 @@ func (service *Service) JWTToken(ctx context.Context, userID uuid.UUID) (string,
 }
 
 // ValidateJWTToken validates provided token and user existence.
-func (service *Service) ValidateJWTToken(ctx context.Context, tkn string) error {
+func (service *Service) ValidateJWTToken(ctx context.Context, tkn string) (*jwt.Token[credentials.Credentials], error) {
 	token := new(jwt.Token[credentials.Credentials])
 	if err := token.Parse(tkn); err != nil {
-		return Error.Wrap(err)
+		return nil, Error.Wrap(err)
 	}
 
 	if err := service.tokenizer.Verify(token); err != nil {
-		return Error.Wrap(err)
+		return nil, Error.Wrap(err)
 	}
 
 	_, err := service.credentials.Get(ctx, credentials.NewGetByID(token.Payload.UserID))
 	if err != nil {
-		return Error.Wrap(err)
+		return nil, Error.Wrap(err)
 	}
 
-	return nil
+	return token, nil
+}
+
+// SetCredsToContext returns updated context with user credentials fetched by user id.
+func (service *Service) SetCredsToContext(ctx context.Context, id uuid.UUID) (context.Context, error) {
+	creds, err := service.GetCreds(ctx, id)
+	if err != nil {
+		return ctx, err
+	}
+
+	return credentials.SetIntoContext(ctx, creds), nil
 }
 
 // verifyUserData returns error in case of incorrect user data.
@@ -249,7 +273,7 @@ func (service *Service) verifyCredentialData(creds *credentials.Credentials) err
 	case creds.IsEmpty():
 		return ParamsError.New("email or phone number is required")
 	case !service.phoneChecker.MatchString(creds.PhoneNumber):
-		return ParamsError.New("invalid phone number format")
+		return ParamsError.New("invalid phone number format %s |", creds.PhoneNumber)
 	case !service.emailChecker.MatchString(creds.Email):
 		return ParamsError.New("invalid email address format")
 	}

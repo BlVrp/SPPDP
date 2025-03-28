@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"one-help/app/fundraises"
 	"time"
+
+	"one-help/app/fundraises"
 
 	"github.com/google/uuid"
 	"github.com/zeebo/errs"
@@ -89,7 +90,7 @@ func (db *fundraisesDB) List(ctx context.Context) ([]fundraises.Fundraise, error
 	if err != nil {
 		return nil, ErrFundraises.Wrap(err)
 	}
-	defer rows.Close()
+	defer func() { err = errs.Combine(err, rows.Close()) }()
 
 	var fundraisesList []fundraises.Fundraise
 	for rows.Next() {
