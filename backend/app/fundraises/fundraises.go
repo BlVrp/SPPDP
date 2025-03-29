@@ -22,3 +22,12 @@ type Fundraise struct {
 func (f *Fundraise) IsEndDateSet() bool {
 	return f.EndDate != time.Time{}
 }
+
+// CreateParams defines needed params to create a new fundraise.
+type CreateParams struct {
+	OrganizerId  uuid.UUID
+	Title        string
+	Description  string
+	TargetAmount float64
+	EndDate      time.Time
+}
