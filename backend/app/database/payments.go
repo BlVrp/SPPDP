@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	"one-help/app/payments"
 
 	"github.com/google/uuid"
@@ -77,7 +78,7 @@ func (db *paymentsDB) List(ctx context.Context) ([]payments.Payment, error) {
 	if err != nil {
 		return nil, ErrPayments.Wrap(err)
 	}
-	defer rows.Close()
+	defer func() { err = errs.Combine(err, rows.Close()) }()
 
 	var paymentsList []payments.Payment
 	for rows.Next() {

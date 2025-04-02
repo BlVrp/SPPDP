@@ -17,7 +17,7 @@ import (
 
 var (
 	// ErrUsers is an internal error type for users controller.
-	ErrUsers = errs.Class("users controller error")
+	ErrUsers = errs.Class("users controller")
 )
 
 // Users is a controller that handles all users related routes.
@@ -82,7 +82,7 @@ func (controller *Users) Register(w http.ResponseWriter, r *http.Request) {
 
 	jwtToken, err := controller.users.JWTToken(ctx, user.ID)
 	if err != nil {
-		controller.log.Error("error while generating JWT token:", ErrUsers.Wrap(err))
+		controller.log.Error("error while generating JWT token", ErrUsers.Wrap(err))
 		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
 		return
 	}
@@ -93,7 +93,7 @@ func (controller *Users) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = json.NewEncoder(w).Encode(resp); err != nil {
-		controller.log.Error("error while encoding response:", ErrUsers.Wrap(err))
+		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
 		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
 		return
 	}
@@ -157,7 +157,7 @@ func (controller *Users) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = json.NewEncoder(w).Encode(resp); err != nil {
-		controller.log.Error("error while encoding response:", ErrUsers.Wrap(err))
+		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
 		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
 		return
 	}
@@ -174,7 +174,7 @@ func (controller *Users) Login(w http.ResponseWriter, r *http.Request) {
 func (controller *Users) Get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	creds, err := credentials.GetIntoContext(ctx)
+	creds, err := credentials.GetFromContext(ctx)
 	if err != nil {
 		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
 		return
@@ -243,7 +243,7 @@ func (controller *Users) GetByID(w http.ResponseWriter, r *http.Request) {
 func (controller *Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	creds, err := credentials.GetIntoContext(ctx)
+	creds, err := credentials.GetFromContext(ctx)
 	if err != nil {
 		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
 		return

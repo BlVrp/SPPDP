@@ -9,6 +9,7 @@ import (
 
 	"one-help/app"
 	"one-help/app/console"
+	"one-help/app/fundraises"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
 	"one-help/internal/logger"
@@ -41,6 +42,11 @@ type Peer struct {
 		DB      users.DB
 		Service *users.Service
 	}
+
+	Fundraises struct {
+		DB      fundraises.DB
+		Service *fundraises.Service
+	}
 }
 
 // New is a constructor for peer.
@@ -58,6 +64,12 @@ func New(ctx context.Context, logger logger.Logger, config Config, db app.DB) (p
 		peer.Users.Service = users.NewService(peer.Log, peer.Config.Users.Config, peer.Users.DB, peer.Users.CredsDB)
 	}
 
+	// users setup
+	{
+		peer.Fundraises.DB = db.Fundraises()
+		peer.Fundraises.Service = fundraises.NewService(peer.Log, peer.Fundraises.DB)
+	}
+
 	// console setup
 	{
 		peer.Console.Listener, err = net.Listen("tcp", config.Console.Config.Address)
@@ -70,6 +82,7 @@ func New(ctx context.Context, logger logger.Logger, config Config, db app.DB) (p
 			peer.Log,
 			peer.Console.Listener,
 			peer.Users.Service,
+			peer.Fundraises.Service,
 		)
 	}
 

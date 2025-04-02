@@ -14,9 +14,11 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"one-help/app/console/controllers/common"
+	fundraisescontroller "one-help/app/console/controllers/fundraises"
 	infocontroller "one-help/app/console/controllers/info"
 	userscontroller "one-help/app/console/controllers/users"
 	_ "one-help/app/console/docs"
+	"one-help/app/fundraises"
 	"one-help/app/users"
 	"one-help/internal/logger"
 )
@@ -45,7 +47,8 @@ type Server struct {
 	listener net.Listener
 	server   http.Server
 
-	users *users.Service
+	users      *users.Service
+	fundraises *fundraises.Service
 }
 
 // NewServer is a constructor for console web server.
@@ -58,16 +61,19 @@ func NewServer(
 	log logger.Logger,
 	listener net.Listener,
 	users *users.Service,
+	fundraises *fundraises.Service,
 ) *Server {
 	server := &Server{
-		log:      log,
-		config:   config,
-		listener: listener,
-		users:    users,
+		log:        log,
+		config:     config,
+		listener:   listener,
+		users:      users,
+		fundraises: fundraises,
 	}
 
 	infoController := infocontroller.NewInfo(log)
 	usersController := userscontroller.NewUsers(log, users)
+	fundraisesController := fundraisescontroller.NewFundraises(log, fundraises)
 
 	router := mux.NewRouter()
 	apiRouter := router.PathPrefix("/api/v0").Subrouter()
@@ -85,10 +91,21 @@ func NewServer(
 
 	usersRouter := apiRouter.PathPrefix("/users").Subrouter()
 	usersRouter.Use(server.jsonResponse)
+	usersRouter.Use(server.withAuthMiddleware)
 	usersRouter.StrictSlash(true)
-	usersRouter.Handle("/", server.withAuth(http.HandlerFunc(usersController.Get), false)).Methods(http.MethodGet, http.MethodOptions)
-	usersRouter.Handle("/change-password", server.withAuth(http.HandlerFunc(usersController.ChangePassword), false)).Methods(http.MethodPatch, http.MethodOptions)
-	usersRouter.Handle("/{id}", server.withAuth(http.HandlerFunc(usersController.GetByID), true)).Methods(http.MethodGet, http.MethodOptions)
+	usersRouter.HandleFunc("/", usersController.Get).Methods(http.MethodGet, http.MethodOptions)
+	usersRouter.HandleFunc("/change-password", usersController.ChangePassword).Methods(http.MethodPatch, http.MethodOptions)
+	usersRouter.HandleFunc("/{id}", usersController.GetByID).Methods(http.MethodGet, http.MethodOptions)
+
+	fundraisesRouter := apiRouter.PathPrefix("/fundraises").Subrouter()
+	fundraisesRouter.Use(server.jsonResponse)
+	usersRouter.Use(server.withAuthMiddleware)
+	fundraisesRouter.StrictSlash(true)
+	fundraisesRouter.HandleFunc("/", fundraisesController.List).Methods(http.MethodGet, http.MethodOptions)
+	fundraisesRouter.HandleFunc("/my", fundraisesController.ListMy).Methods(http.MethodGet, http.MethodOptions)
+	fundraisesRouter.HandleFunc("/{id}", fundraisesController.GetByID).Methods(http.MethodGet, http.MethodOptions)
+	fundraisesRouter.HandleFunc("/", fundraisesController.Create).Methods(http.MethodPost, http.MethodOptions)
+	fundraisesRouter.HandleFunc("/{id}/donate", fundraisesController.Donate).Methods(http.MethodPost, http.MethodOptions)
 
 	apiRouter.PathPrefix("/docs/swagger/").Handler(httpswagger.WrapHandler)
 
@@ -167,4 +184,8 @@ func (server *Server) withAuth(handler http.Handler, optionalAuth bool) http.Han
 
 		handler.ServeHTTP(w, r.Clone(ctx))
 	})
+}
+
+func (server *Server) withAuthMiddleware(handler http.Handler) http.Handler {
+	return server.withAuth(handler, true)
 }

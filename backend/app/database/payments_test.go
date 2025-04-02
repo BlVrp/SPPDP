@@ -2,6 +2,9 @@ package database_test
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"one-help/app"
 	"one-help/app/database"
 	"one-help/app/database/dbtesting"
@@ -9,8 +12,6 @@ import (
 	"one-help/app/fundraises"
 	"one-help/app/payments"
 	"one-help/app/users"
-	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -64,13 +65,12 @@ func TestPayments(t *testing.T) {
 		paymentTypesRepository := db.PaymentTypes()
 		paymentsRepository := db.Payments()
 		t.Run("Create&Get", func(t *testing.T) {
-			fundraiseStatusesRepository.Create(ctx, fundraiseStatus)
-			usersRepository.Create(ctx, user)
-			fundraiseRepository.Create(ctx, fundraise)
-			donationsRepository.Create(ctx, donation)
-			paymentTypesRepository.Create(ctx, paymentType)
-			err := paymentsRepository.Create(ctx, payment)
-			require.NoError(t, err)
+			require.NoError(t, fundraiseStatusesRepository.Create(ctx, fundraiseStatus))
+			require.NoError(t, usersRepository.Create(ctx, user))
+			require.NoError(t, fundraiseRepository.Create(ctx, fundraise))
+			require.NoError(t, donationsRepository.Create(ctx, donation))
+			require.NoError(t, paymentTypesRepository.Create(ctx, paymentType))
+			require.NoError(t, paymentsRepository.Create(ctx, payment))
 
 			storedPayment, err := paymentsRepository.Get(ctx, donation.ID)
 			require.NoError(t, err)
