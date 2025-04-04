@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"one-help/app/fundraises"
@@ -41,6 +42,7 @@ func (db *fundraisesDB) Create(ctx context.Context, fundraise fundraises.Fundrai
 	query := `INSERT INTO fundraises(fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status)
               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 	_, err = tx.ExecContext(ctx, query, fundraise.ID, fundraise.OrganizerId, fundraise.Title, fundraise.Description, fundraise.TargetAmount, fundraise.StartDate, fundraise.EndDate, fundraise.Status)
+
 	return ErrFundraises.Wrap(err)
 }
 
@@ -70,6 +72,7 @@ func (db *fundraisesDB) Get(ctx context.Context, id uuid.UUID) (fundraises.Fundr
 		if errors.Is(err, sql.ErrNoRows) {
 			return fundraises.Fundraise{}, ErrFundraises.Wrap(fundraises.ErrNoFundraise)
 		}
+
 		return fundraise, ErrFundraises.Wrap(err)
 	}
 
@@ -83,10 +86,31 @@ func (db *fundraisesDB) Get(ctx context.Context, id uuid.UUID) (fundraises.Fundr
 }
 
 // List returns all the fundraises.
-func (db *fundraisesDB) List(ctx context.Context) ([]fundraises.Fundraise, error) {
+func (db *fundraisesDB) List(ctx context.Context, params fundraises.ListParams) ([]fundraises.Fundraise, error) {
+	var args = make([]any, 0, 3)
+	if params.Limit == 0 {
+		params.Limit = 20
+	}
+	if params.Page == 0 {
+		params.Page = 1
+	}
+
 	query := `SELECT fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status
               FROM fundraises`
-	rows, err := db.conn.QueryContext(ctx, query)
+
+	if params.OrganizerID != nil {
+		args = append(args, *params.OrganizerID)
+		query += fmt.Sprintf(" WHERE organizer_id = $%d ", len(args))
+	}
+
+	{ // INFO: Paging.
+		args = append(args, params.Limit)
+		query += fmt.Sprintf(" LIMIT $%d", len(args))
+		args = append(args, (params.Page-1)*params.Limit)
+		query += fmt.Sprintf(" OFFSET $%d ", len(args))
+	}
+
+	rows, err := db.conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, ErrFundraises.Wrap(err)
 	}
@@ -98,7 +122,7 @@ func (db *fundraisesDB) List(ctx context.Context) ([]fundraises.Fundraise, error
 			fundraise fundraises.Fundraise
 			endDate   sql.NullTime
 		)
-		err := rows.Scan(
+		err = rows.Scan(
 			&fundraise.ID,
 			&fundraise.OrganizerId,
 			&fundraise.Title,

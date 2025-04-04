@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Donation holds donate info.
 type Donation struct {
 	ID          uuid.UUID
 	UserId      uuid.UUID

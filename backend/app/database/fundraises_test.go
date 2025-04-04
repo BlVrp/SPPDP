@@ -9,6 +9,7 @@ import (
 	"one-help/app/database"
 	"one-help/app/database/dbtesting"
 	"one-help/app/fundraises"
+	"one-help/app/fundraises/statuses"
 	"one-help/app/users"
 
 	"github.com/google/uuid"
@@ -25,8 +26,6 @@ func TestFundraises(t *testing.T) {
 		FileName:  "john_doe.txt",
 	}
 
-	fundraiseStatus := "Active"
-
 	fundraise := fundraises.Fundraise{
 		ID:           uuid.New(),
 		OrganizerId:  user.ID,
@@ -35,7 +34,7 @@ func TestFundraises(t *testing.T) {
 		TargetAmount: 234.4,
 		StartDate:    time.Now(),
 		EndDate:      time.Time{},
-		Status:       fundraiseStatus,
+		Status:       statuses.ActiveStatus,
 	}
 
 	dbtesting.Run(t, database.Config{}, func(ctx context.Context, t *testing.T, db app.DB) {
@@ -43,7 +42,7 @@ func TestFundraises(t *testing.T) {
 		usersRepository := db.Users()
 		fundraiseStatusesRepository := db.FundraiseStatuses()
 		t.Run("Create&Get", func(t *testing.T) {
-			require.NoError(t, fundraiseStatusesRepository.Create(ctx, fundraiseStatus))
+			require.NoError(t, fundraiseStatusesRepository.Create(ctx, fundraise.Status))
 			require.NoError(t, usersRepository.Create(ctx, user))
 			require.NoError(t, fundraiseRepository.Create(ctx, fundraise))
 
@@ -76,10 +75,22 @@ func TestFundraises(t *testing.T) {
 		})
 
 		t.Run("List", func(t *testing.T) {
-			storedFundraises, err := fundraiseRepository.List(ctx)
+			storedFundraises, err := fundraiseRepository.List(ctx, fundraises.ListParams{})
 			require.NoError(t, err)
 			fundraisesAreEqual(t, fundraise, storedFundraises[0])
 			assert.Equal(t, 1, len(storedFundraises))
+		})
+
+		t.Run("List of creator", func(t *testing.T) {
+			id := uuid.New()
+			storedFundraises, err := fundraiseRepository.List(ctx, fundraises.ListParams{OrganizerID: &id})
+			require.NoError(t, err)
+			require.Len(t, storedFundraises, 0)
+
+			storedFundraises, err = fundraiseRepository.List(ctx, fundraises.ListParams{OrganizerID: &user.ID})
+			require.NoError(t, err)
+			require.Len(t, storedFundraises, 1)
+			fundraisesAreEqual(t, fundraise, storedFundraises[0])
 		})
 
 		t.Run("Delete", func(t *testing.T) {

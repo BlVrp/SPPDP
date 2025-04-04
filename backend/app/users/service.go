@@ -18,7 +18,7 @@ import (
 var (
 	// Error wraps errors from users service that indicates about internal errors.
 	Error = errs.Class("users service")
-	// ParamsError wraps errors from users service that indicates about invalid or malformed parameters data.
+	// ParamsError wraps errors from users service that indicates about invalid or malformed parameters' data.
 	ParamsError = errs.Class("users service: params")
 )
 

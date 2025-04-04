@@ -21,9 +21,16 @@ type DB interface {
 	// Get fundraise from the database.
 	Get(ctx context.Context, id uuid.UUID) (Fundraise, error)
 	// List returns all available fundraises.
-	List(ctx context.Context) ([]Fundraise, error)
+	List(ctx context.Context, params ListParams) ([]Fundraise, error)
 	// Update updates fundraise in database by id.
 	Update(ctx context.Context, fundraise Fundraise) error
 	// Delete fundraise from the database.
 	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+// ListParams defines params for list method.
+type ListParams struct {
+	OrganizerID *uuid.UUID
+	Limit       int
+	Page        int
 }

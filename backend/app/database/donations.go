@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	"one-help/app/donations"
 
 	"github.com/google/uuid"
@@ -78,14 +79,14 @@ func (db *donationsDB) List(ctx context.Context) ([]donations.Donation, error) {
 	if err != nil {
 		return nil, ErrDonations.Wrap(err)
 	}
-	defer rows.Close()
+	defer func() { err = errs.Combine(err, rows.Close()) }()
 
 	var donationsList []donations.Donation
 	for rows.Next() {
 		var (
 			donation donations.Donation
 		)
-		err := rows.Scan(
+		err = rows.Scan(
 			&donation.ID,
 			&donation.UserId,
 			&donation.FundraiseId,

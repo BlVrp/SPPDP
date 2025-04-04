@@ -35,8 +35,8 @@ func SetIntoContext(ctx context.Context, creds *Credentials) context.Context {
 	return context.WithValue(ctx, credsKey, creds)
 }
 
-// GetIntoContext returns credentials from provided context if exists.
-func GetIntoContext(ctx context.Context) (*Credentials, error) {
+// GetFromContext returns credentials from provided context if exists.
+func GetFromContext(ctx context.Context) (*Credentials, error) {
 	val := ctx.Value(credsKey)
 	if val == nil {
 		return nil, errors.New("credentials not found in context")
