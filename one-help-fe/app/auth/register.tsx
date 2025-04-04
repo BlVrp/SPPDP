@@ -66,9 +66,9 @@ export default function RegisterPage() {
       <TextInput placeholder="Email *" value={email} onChangeText={setEmail} className="border border-gray-300 rounded-lg p-3 mt-2 bg-gray-100 text-gray-700" />
       <TextInput placeholder="Пароль *" value={password} onChangeText={setPassword} secureTextEntry className="border border-gray-300 rounded-lg p-3 mt-2 bg-gray-100 text-gray-700" />
 
-      <TextInput placeholder="Місто" value={city} onChangeText={setCity} className="border border-gray-300 rounded-lg p-3 mt-4 bg-gray-100 text-gray-700" />
+      {/* <TextInput placeholder="Місто" value={city} onChangeText={setCity} className="border border-gray-300 rounded-lg p-3 mt-4 bg-gray-100 text-gray-700" />
       <TextInput placeholder="Пошта (наприклад: NP, UKRPOST)" value={post} onChangeText={setPost} className="border border-gray-300 rounded-lg p-3 mt-2 bg-gray-100 text-gray-700" />
-      <TextInput placeholder="Номер відділення (лише цифра)" value={postDepartment} onChangeText={setPostDepartment} keyboardType="numeric" className="border border-gray-300 rounded-lg p-3 mt-2 bg-gray-100 text-gray-700" />
+      <TextInput placeholder="Номер відділення (лише цифра)" value={postDepartment} onChangeText={setPostDepartment} keyboardType="numeric" className="border border-gray-300 rounded-lg p-3 mt-2 bg-gray-100 text-gray-700" /> */}
       {/* <TextInput placeholder="Вебсайт (необов'язково)" value={website} onChangeText={setWebsite} className="border border-gray-300 rounded-lg p-3 mt-2 bg-gray-100 text-gray-700" /> */}
 
       <TouchableOpacity

@@ -30,31 +30,56 @@ export default function SettingsPage() {
     setEditedUser((prev) => prev ? { ...prev, [field]: value } : null);
   };
 
-  const handleSave = () => {
-    if (!editedUser) return;
+  const handleSave = async () => {
+    console.log("handleSave")
+    if (!editedUser || !user?.id) return;
 
+    console.log("handleSave 2")
+  
     const requiredFields = [
-      'firstName',
-      'lastName',
-      'phoneNumber',
-      'email',
-      'city',
-      'post',
-      'postDepartment',
+      'firstName', 'lastName', 'phoneNumber', 'email',
     ];
-
+  
     const allFieldsFilled = requiredFields.every(field => editedUser[field]);
-
+  
     if (!allFieldsFilled) {
+      console.log("Помилка', 'Усі поля обов\'язкові")
       Alert.alert('Помилка', 'Усі поля обов\'язкові');
       return;
     }
+  
+    try {
+      console.log("handleSave 3")
 
-    setUser(editedUser);
-    AsyncStorage.setItem('user', JSON.stringify(editedUser));
-    setIsEditingBasic(false);
-    setIsEditingAddress(false);
+      const token = await AsyncStorage.getItem('token');
+  
+      const response = await fetch(`http://localhost:8080/api/v0/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editedUser),
+      });
+  
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Помилка збереження даних');
+      }
+  
+      const updated = await response.json();
+      setUser(updated);
+      await AsyncStorage.setItem('user', JSON.stringify(updated));
+  
+      setIsEditingBasic(false);
+      setIsEditingAddress(false);
+      Alert.alert('✅ Успіх', 'Інформацію оновлено');
+    } catch (error: any) {
+      console.error('❌ Error saving user:', error);
+      Alert.alert('Помилка', error.message);
+    }
   };
+  
 
   const handleLoginLogout = async () => {
     if (isLoggedIn) {
