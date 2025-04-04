@@ -99,7 +99,7 @@ func NewServer(
 
 	fundraisesRouter := apiRouter.PathPrefix("/fundraises").Subrouter()
 	fundraisesRouter.Use(server.jsonResponse)
-	usersRouter.Use(server.withAuthMiddleware)
+	fundraisesRouter.Use(server.withAuthMiddleware)
 	fundraisesRouter.StrictSlash(true)
 	fundraisesRouter.HandleFunc("/", fundraisesController.List).Methods(http.MethodGet, http.MethodOptions)
 	fundraisesRouter.HandleFunc("/my", fundraisesController.ListMy).Methods(http.MethodGet, http.MethodOptions)
