@@ -1,121 +1,115 @@
-import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ProgressBar } from "react-native-paper";
 
-const TEMP_RAFFLE = {
-  raffle_id: "1",
-  title: 'Збір "Ліжка для війська"',
-  description:
-    "Кожен донат бере участь у розіграші 2 принтів картини «Свята земля» з автографами KALUSH ORCHESTRA",
-  minimum_donation: 10,
-  participation_status: false,
-  gifts: [
-    {
-      id: "1",
-      title: "Playstation",
-      image:
-        "https://kolo-django-prod.s3.amazonaws.com/campaigns/2/1692702564/ps_5_1200%C3%91630.webp",
-    },
-    {
-      id: "2",
-      title: "Сережки з гербом",
-      description: "",
-      image:
-        "https://soundmagcdn.fra1.cdn.digitaloceanspaces.com/news/688/uG5AEqgmTpT61F7n.webp",
-    },
-  ],
-  fundraiser: {
-    target: 2500000,
-    current: 1000000,
-    end_date: "2025-11-30",
-  },
-};
-
-export default function RaffleDetail() {
+export default function DetailedFundraiseCard() {
   const { id } = useLocalSearchParams();
-  const [currentGiftIndex, setCurrentGiftIndex] = useState(0);
-  const raffle = TEMP_RAFFLE;
+  const router = useRouter();
+  const [fundraiser, setFundraiser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const nextGift = () => {
-    setCurrentGiftIndex((prev) =>
-      prev + 1 < raffle.gifts.length ? prev + 1 : 0
-    );
+  const fetchFundraiser = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Помилка", "Користувач не авторизований");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8080/api/v0/fundraises/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Не вдалося отримати дані збору");
+      }
+
+      const data = await response.json();
+      setFundraiser(data);
+    } catch (err: any) {
+      Alert.alert("Помилка", err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const prevGift = () => {
-    setCurrentGiftIndex((prev) =>
-      prev - 1 >= 0 ? prev - 1 : raffle.gifts.length - 1
+  useEffect(() => {
+    if (id) fetchFundraiser();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
     );
-  };
+  }
+
+  if (!fundraiser) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <Text className="text-lg text-gray-msg">Збір не знайдено 😕</Text>
+        <TouchableOpacity
+          className="mt-4 px-4 py-2 bg-primary rounded-md"
+          onPress={() => router.back()}
+        >
+          <Text className="text-white">Назад</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 bg-white p-4">
       <View className="bg-accent p-4 rounded-2xl">
-        <View className="relative items-center">
-          <TouchableOpacity
-            onPress={prevGift}
-            className="absolute left-0 top-1/2 -translate-y-1/2 px-3 py-2"
-          >
-            <Text className="text-2xl">⬅</Text>
-          </TouchableOpacity>
+        <Image
+          source={{
+            uri:
+              fundraiser.image ||
+              "https://via.placeholder.com/600x400.png?text=Fundraise",
+          }}
+          className="w-full h-96 rounded-lg mb-4"
+          resizeMode="cover"
+        />
 
-          <Image
-            source={{ uri: raffle.gifts[currentGiftIndex].image }}
-            className="w-3/4 h-72 rounded-lg"
-            resizeMode="cover"
-          />
-          <Text className="text-lg text-grey-msg text-center mt-1">
-            {raffle.gifts[currentGiftIndex].title}
-          </Text>
-
-          <TouchableOpacity
-            onPress={nextGift}
-            className="absolute right-0 top-1/2 -translate-y-1/2 px-3 py-2"
-          >
-            <Text className="text-2xl">➡</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View className="mt-4 flex-row justify-center items-center">
-          <TouchableOpacity className="bg-primary rounded-md px-4 w-2/3 py-2">
-            <Text className="text-white text-lg font-semibold text-center">
-              Донат від {raffle.minimum_donation} ₴ 💰
-            </Text>
-          </TouchableOpacity>
-
-          <Text className="text-4xl ml-3">
-            {raffle.participation_status ? "✅" : "☑️"}
-          </Text>
-        </View>
-
-        <Text className="text-2xl font-bold text-black text-center mt-4">
-          {raffle.title}
+        <Text className="text-xl font-bold text-black text-center mb-2">
+          {fundraiser.title}
         </Text>
-        <View className="mb-3 ml-4">
-          <Text className="text-grey-msg text-md mt-4">
-            {raffle.description}
-          </Text>
-          <Text className="text-grey-msg mt-2">
-            📆 Донати приймаються до {raffle.fundraiser.end_date}
-          </Text>
-        </View>
+
+        <Text className="text-gray-msg mt-2 text-base leading-5 mb-4">
+          {fundraiser.description}
+        </Text>
 
         <View className="mt-4">
-          <Text className="text-grey-msg text-center">
-            {raffle.fundraiser.current.toLocaleString()} /{" "}
-            {raffle.fundraiser.target.toLocaleString()}
+          <Text className="text-grey-msg text-sm text-center font-medium">
+            {fundraiser.filledAmount.toLocaleString()} /{" "}
+            {fundraiser.targetAmount.toLocaleString()} грн
           </Text>
-          <View className="h-2 w-full bg-gray-200 rounded-full mt-1">
-            <View
-              className="h-2 bg-primary rounded-full"
-              style={{
-                width: `${
-                  (raffle.fundraiser.current / raffle.fundraiser.target) * 100
-                }%`,
-              }}
-            />
-          </View>
+          <ProgressBar
+            progress={
+              fundraiser.filledAmount / fundraiser.targetAmount || 0
+            }
+            color="#2563EB"
+            className="h-3 rounded-md mt-1"
+          />
         </View>
+
+        <TouchableOpacity className="bg-primary rounded-lg p-3 mt-5 items-center">
+          <Text className="text-white text-lg font-semibold">Донат 🍩</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

@@ -1,36 +1,48 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
-import { useNavigation, Link } from "expo-router";
+import { View, Text, FlatList, ActivityIndicator, Alert } from "react-native";
+import { Link } from "expo-router";
 import FundraiseSmallCard from "@/components/ui/FundraiserSmallCard";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RecentFunsraises() {
   const [fundraisers, setFundraisers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setFundraisers([
+  const fetchRecentFundraisers = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Помилка", "Користувач не авторизований");
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:8080/api/v0/fundraises?limit=2&page=1",
         {
-          id: "1",
-          title: "На 2 ecoflow delta max",
-          description: "для батальйону радіоелектронної розвідки",
-          image:
-            "https://www.peoplesproject.com/wp-content/uploads/2023/09/11113.jpg",
-          goal: 71000,
-          raised: 55000,
-        },
-        {
-          id: "2",
-          title: "Збір на авто",
-          description: "25 бригада, Покровського напрямку",
-          image:
-            "https://ptv.ua/mediafiles/gallery/d5d26a74-41b8-4985-bccb-492ffa84f7b5.jfif",
-          goal: 260000,
-          raised: 100000,
-        },
-      ]);
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Помилка отримання зборів");
+      }
+
+      const result = await response.json();
+      setFundraisers(result.data || []);
+    } catch (error: any) {
+      Alert.alert("Помилка", error.message);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentFundraisers();
   }, []);
 
   return (
