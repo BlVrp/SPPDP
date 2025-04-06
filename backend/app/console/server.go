@@ -14,10 +14,12 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"one-help/app/console/controllers/common"
+	eventscontroller "one-help/app/console/controllers/events"
 	fundraisescontroller "one-help/app/console/controllers/fundraises"
 	infocontroller "one-help/app/console/controllers/info"
 	userscontroller "one-help/app/console/controllers/users"
 	_ "one-help/app/console/docs"
+	"one-help/app/events"
 	"one-help/app/fundraises"
 	"one-help/app/users"
 	"one-help/internal/logger"
@@ -49,6 +51,7 @@ type Server struct {
 
 	users      *users.Service
 	fundraises *fundraises.Service
+	events     *events.Service
 }
 
 // NewServer is a constructor for console web server.
@@ -62,6 +65,7 @@ func NewServer(
 	listener net.Listener,
 	users *users.Service,
 	fundraises *fundraises.Service,
+	events *events.Service,
 ) *Server {
 	server := &Server{
 		log:        log,
@@ -69,11 +73,13 @@ func NewServer(
 		listener:   listener,
 		users:      users,
 		fundraises: fundraises,
+		events:     events,
 	}
 
 	infoController := infocontroller.NewInfo(log)
 	usersController := userscontroller.NewUsers(log, users)
 	fundraisesController := fundraisescontroller.NewFundraises(log, fundraises)
+	eventsController := eventscontroller.NewEvents(log, events, fundraises)
 
 	router := mux.NewRouter()
 	apiRouter := router.PathPrefix("/api/v0").Subrouter()
@@ -106,6 +112,14 @@ func NewServer(
 	fundraisesRouter.HandleFunc("/{id}", fundraisesController.GetByID).Methods(http.MethodGet, http.MethodOptions)
 	fundraisesRouter.HandleFunc("/", fundraisesController.Create).Methods(http.MethodPost, http.MethodOptions)
 	fundraisesRouter.HandleFunc("/{id}/donate", fundraisesController.Donate).Methods(http.MethodPost, http.MethodOptions)
+
+	eventsRouter := apiRouter.PathPrefix("/events").Subrouter()
+	eventsRouter.Use(server.jsonResponse)
+	eventsRouter.Use(server.withAuthMiddleware)
+	eventsRouter.StrictSlash(true)
+	eventsRouter.HandleFunc("/", eventsController.List).Methods(http.MethodGet, http.MethodOptions)
+	eventsRouter.HandleFunc("/{id}", eventsController.GetByID).Methods(http.MethodGet, http.MethodOptions)
+	eventsRouter.HandleFunc("/", eventsController.Create).Methods(http.MethodPost, http.MethodOptions)
 
 	apiRouter.PathPrefix("/docs/swagger/").Handler(httpswagger.WrapHandler)
 
