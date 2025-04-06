@@ -1,0 +1,3 @@
+DELETE FROM fundraise_statuses WHERE status IN ('ACTIVE','DONE','POSTPONED','CANCELLED','TRANSFERRED');
+
+DELETE FROM posts WHERE post IN ('NP');
