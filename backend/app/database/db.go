@@ -19,6 +19,7 @@ import (
 	"one-help/app/payments"
 	paymenttypes "one-help/app/payments/types"
 	"one-help/app/posts"
+	"one-help/app/raffles"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
 )
@@ -119,6 +120,11 @@ func (db *database) PaymentTypes() paymenttypes.DB {
 // Payments provides access to payments DB.
 func (db *database) Payments() payments.DB {
 	return newPaymentsDB(db.conn)
+}
+
+// Raffles provides access to raffles DB.
+func (db *database) Raffles() raffles.DB {
+	return newRafflesDB(db.conn)
 }
 
 // Close closes underlying db connection.

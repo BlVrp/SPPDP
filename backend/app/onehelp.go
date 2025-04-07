@@ -8,6 +8,7 @@ import (
 	"one-help/app/payments"
 	paymenttypes "one-help/app/payments/types"
 	"one-help/app/posts"
+	"one-help/app/raffles"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
 )
@@ -45,6 +46,9 @@ type DB interface {
 
 	// Payments provides access to payments DB.
 	Payments() payments.DB
+
+	// Raffles provides access to raffles DB.
+	Raffles() raffles.DB
 
 	// ExecuteMigrations applies migrations for the database.
 	ExecuteMigrations(migrationsPath string, isUp bool) (err error)
