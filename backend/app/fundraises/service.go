@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	// Error wraps errors from users service that indicates about internal errors.
+	// Error wraps errors from fundraises service that indicates about internal errors.
 	Error = errs.Class("fundraises service")
-	// ParamsError wraps errors from users service that indicates about invalid or malformed parameters' data.
-	ParamsError = errs.Class("users service: params")
+	// ParamsError wraps errors from fundraises service that indicates about invalid or malformed parameters' data.
+	ParamsError = errs.Class("fundraises service: params")
 )
 
 // Service handles fundraises related logic.
@@ -35,7 +35,7 @@ func NewService(logger logger.Logger, fundraises DB) *Service {
 	}
 }
 
-// Create created new Fundraise data in the system.
+// Create creates new Fundraise data in the system.
 func (service *Service) Create(ctx context.Context, params CreateParams) (*Fundraise, error) {
 	switch {
 	case params.Title == "":
@@ -65,7 +65,7 @@ func (service *Service) Create(ctx context.Context, params CreateParams) (*Fundr
 	return fundraise, nil
 }
 
-// Get returns Fundraise be id.
+// Get returns Fundraise by id.
 func (service *Service) Get(ctx context.Context, id uuid.UUID) (*Fundraise, error) {
 	fundraise, err := service.fundraises.Get(ctx, id)
 	if err != nil {

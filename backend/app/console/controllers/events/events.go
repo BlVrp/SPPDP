@@ -47,7 +47,7 @@ func NewEvents(log logger.Logger, events *events.Service, fundraises *fundraises
 // @Accept	json
 // @Produce	json
 // @Param	request	body	CreateRequest	true	"Event needed data fields"
-// @Success	200		{object}	EventsView
+// @Success	200		{object}	EventView
 // @Failure	400,401,500	{object}	common.ErrResponseCode
 // @Router	/events/	[post].
 func (controller *Events) Create(w http.ResponseWriter, r *http.Request) {
@@ -122,7 +122,7 @@ func (controller *Events) Create(w http.ResponseWriter, r *http.Request) {
 // @Param	Authorization	header	string	true	"Bearer token to authorize access"
 // @Param	limit			query	integer	false	"Items per page (positive number expected) [default value: 20]"
 // @Param	page			query	integer	false	"Number of the page (1...) [default value: 1]"
-// @Success	200		{object}	common.Page[EventsView]
+// @Success	200		{object}	common.Page[EventView]
 // @Failure	400,401,500	{object}	common.ErrResponseCode
 // @Router	/events/	[get].
 func (controller *Events) List(w http.ResponseWriter, r *http.Request) {
