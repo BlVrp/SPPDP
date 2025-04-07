@@ -67,9 +67,9 @@ func (controller *Events) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	list, err := controller.fundraises.List(ctx, 1000, 1, &creds.UserID)
+	fundraise, err := controller.fundraises.Get(ctx, request.FundraiseId)
 	if err != nil {
-		controller.log.Error("failed to list fundraises", ErrEvents.Wrap(err))
+		controller.log.Error("failed to get the fundraise related to the new event", ErrEvents.Wrap(err))
 		if fundraises.ParamsError.Has(err) {
 			common.NewErrResponse(http.StatusBadRequest, errors.Unwrap(err)).Serve(controller.log, ErrEvents, w)
 			return
@@ -78,16 +78,7 @@ func (controller *Events) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fundraiseBelongsToUser := false
-
-	for _, fundraise := range list {
-		if fundraise.ID == request.FundraiseId {
-			fundraiseBelongsToUser = true
-			break
-		}
-	}
-
-	if !fundraiseBelongsToUser {
+	if fundraise.OrganizerId != creds.UserID {
 		controller.log.Error("user is not allowed to create event for this fundraise", ErrEvents.New("user is not allowed to create event for this fundraise"))
 		common.NewErrResponse(http.StatusForbidden, errors.New("user is not allowed to create event for this fundraise")).Serve(controller.log, ErrEvents, w)
 		return
@@ -101,6 +92,7 @@ func (controller *Events) Create(w http.ResponseWriter, r *http.Request) {
 		Format:          request.Format,
 		MaxParticipants: request.MaxParticipants,
 		MinimumDonation: request.MinimumDonation,
+		Address:         request.Address,
 		FundraiseId:     request.FundraiseId,
 	}
 

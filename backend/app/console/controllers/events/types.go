@@ -3,6 +3,7 @@ package events
 import (
 	"time"
 
+	"one-help/app/console/controllers/fundraises"
 	"one-help/app/events"
 
 	"github.com/google/uuid"
@@ -18,7 +19,6 @@ type CreateRequest struct {
 	MaxParticipants int       `json:"maxParticipants"`
 	MinimumDonation float64   `json:"minimumDonation"`
 	Address         string    `json:"address"`
-	Status          string    `json:"status"`
 	FundraiseId     uuid.UUID `json:"fundraiseId"`
 }
 
@@ -28,7 +28,7 @@ type EventView struct {
 	Title           string    `json:"title"`
 	Description     string    `json:"description"`
 	StartDate       time.Time `json:"startDate"`
-	EndDate         time.Time `json:"endDate"`
+	EndDate         time.Time `json:"endDate,omitempty"`
 	Format          string    `json:"format"`
 	MaxParticipants int       `json:"maxParticipants"`
 	MinimumDonation float64   `json:"minimumDonation"`
@@ -36,6 +36,24 @@ type EventView struct {
 	Status          string    `json:"status"`
 	FundraiseId     uuid.UUID `json:"fundraiseId"`
 	CreatedAt       time.Time `json:"createdAt"`
+}
+
+// EventListView defines event view type.
+type EventViewExtended struct {
+	ID              uuid.UUID `json:"id"`
+	Title           string    `json:"title"`
+	Description     string    `json:"description"`
+	StartDate       time.Time `json:"startDate"`
+	EndDate         time.Time `json:"endDate,omitempty"`
+	Format          string    `json:"format"`
+	MaxParticipants int       `json:"maxParticipants"`
+	MinimumDonation float64   `json:"minimumDonation"`
+	Address         string    `json:"address"`
+	Status          string    `json:"status"`
+	FundraiseId     uuid.UUID `json:"fundraiseId"`
+	CreatedAt       time.Time `json:"createdAt"`
+
+	Fundraise fundraises.FundraiseView `json:"fundraise"`
 }
 
 // ToEventView converts event to view type.
@@ -53,5 +71,25 @@ func ToEventView(e *events.Event) EventView {
 		Status:          e.Status,
 		FundraiseId:     e.FundraiseId,
 		CreatedAt:       e.CreatedAt,
+	}
+}
+
+// ToEventViewExtended converts event to extended view type.
+func ToEventViewExtended(e *events.Event, fundraise fundraises.FundraiseView) EventViewExtended {
+	return EventViewExtended{
+		ID:              e.ID,
+		Title:           e.Title,
+		Description:     e.Description,
+		StartDate:       e.StartDate,
+		EndDate:         e.EndDate,
+		Format:          e.Format,
+		MaxParticipants: e.MaxParticipants,
+		MinimumDonation: e.MinimumDonation,
+		Address:         e.Address,
+		Status:          e.Status,
+		FundraiseId:     e.FundraiseId,
+		CreatedAt:       e.CreatedAt,
+
+		Fundraise: fundraise,
 	}
 }
