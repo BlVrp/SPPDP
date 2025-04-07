@@ -1,12 +1,14 @@
 package events
 
 import (
-	"one-help/app/events"
 	"time"
+
+	"one-help/app/events"
 
 	"github.com/google/uuid"
 )
 
+// CreateRequest defines parameters needed to create event.
 type CreateRequest struct {
 	Title           string    `json:"title"`
 	Description     string    `json:"description"`
@@ -20,6 +22,7 @@ type CreateRequest struct {
 	FundraiseId     uuid.UUID `json:"fundraiseId"`
 }
 
+// EventView defines event view type.
 type EventView struct {
 	ID              uuid.UUID `json:"id"`
 	Title           string    `json:"title"`
@@ -35,6 +38,7 @@ type EventView struct {
 	CreatedAt       time.Time `json:"createdAt"`
 }
 
+// ToEventView converts event to view type.
 func ToEventView(e *events.Event) EventView {
 	return EventView{
 		ID:              e.ID,

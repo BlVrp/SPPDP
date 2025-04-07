@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
+
 	"one-help/app/console/controllers/common"
 	"one-help/app/events"
 	"one-help/app/fundraises"
 	"one-help/app/users/credentials"
 	"one-help/internal/logger"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"

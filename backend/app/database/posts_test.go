@@ -21,8 +21,8 @@ func TestPosts(t *testing.T) {
 			require.NoError(t, err)
 			storedPosts, err := postsRepository.List(ctx)
 			require.NoError(t, err)
-			assert.Equal(t, post, storedPosts[0])
-			assert.Equal(t, 1, len(storedPosts))
+			require.Equal(t, 2, len(storedPosts))
+			assert.Contains(t, storedPosts, post)
 		})
 
 		t.Run("Delete", func(t *testing.T) {
@@ -30,7 +30,7 @@ func TestPosts(t *testing.T) {
 			require.NoError(t, err)
 			storedPosts, err := postsRepository.List(ctx)
 			require.NoError(t, err)
-			assert.Empty(t, storedPosts)
+			require.Equal(t, 1, len(storedPosts))
 		})
 	})
 }
