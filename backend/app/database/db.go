@@ -13,11 +13,13 @@ import (
 
 	"one-help/app"
 	"one-help/app/donations"
+	"one-help/app/events"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/payments"
 	paymenttypes "one-help/app/payments/types"
 	"one-help/app/posts"
+	"one-help/app/raffles"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
 )
@@ -100,6 +102,11 @@ func (db *database) Fundraises() fundraises.DB {
 	return newFundraisesDB(db.conn)
 }
 
+// Events provides access to events DB.
+func (db *database) Events() events.DB {
+	return newEventsDB(db.conn)
+}
+
 // Donations provides access to donations DB.
 func (db *database) Donations() donations.DB {
 	return newDonationsDB(db.conn)
@@ -113,6 +120,11 @@ func (db *database) PaymentTypes() paymenttypes.DB {
 // Payments provides access to payments DB.
 func (db *database) Payments() payments.DB {
 	return newPaymentsDB(db.conn)
+}
+
+// Raffles provides access to raffles DB.
+func (db *database) Raffles() raffles.DB {
+	return newRafflesDB(db.conn)
 }
 
 // Close closes underlying db connection.

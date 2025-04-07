@@ -2,11 +2,13 @@ package app
 
 import (
 	"one-help/app/donations"
+	"one-help/app/events"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/payments"
 	paymenttypes "one-help/app/payments/types"
 	"one-help/app/posts"
+	"one-help/app/raffles"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
 )
@@ -33,6 +35,9 @@ type DB interface {
 	// Fundraises provides access to fundraises DB.
 	Fundraises() fundraises.DB
 
+	// Events provides access to events DB.
+	Events() events.DB
+
 	// Donations provides access to donations DB.
 	Donations() donations.DB
 
@@ -41,6 +46,9 @@ type DB interface {
 
 	// Payments provides access to payments DB.
 	Payments() payments.DB
+
+	// Raffles provides access to raffles DB.
+	Raffles() raffles.DB
 
 	// ExecuteMigrations applies migrations for the database.
 	ExecuteMigrations(migrationsPath string, isUp bool) (err error)
