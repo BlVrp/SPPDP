@@ -2,9 +2,10 @@ package events
 
 import (
 	"context"
+	"time"
+
 	"one-help/app/events/statuses"
 	"one-help/internal/logger"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/zeebo/errs"
@@ -68,6 +69,7 @@ func (service *Service) Create(ctx context.Context, params CreateParams) (*Event
 		Status:          statuses.ActiveStatus,
 		FundraiseId:     params.FundraiseId,
 		CreatedAt:       time.Now().UTC(),
+		ImageUrl:        params.ImageUrl,
 	}
 
 	err := service.events.Create(ctx, *event)

@@ -45,7 +45,7 @@ func NewUsers(log logger.Logger, users *users.Service) *Users {
 // @Param	request	body	RegisterRequest	true	"Register request fields"
 // @Success	200		{object}	AuthResponse
 // @Failure	400,500	{object}	common.ErrResponseCode
-// @Router	/auth/register/	[post].
+// @Router	/auth/register	[post].
 func (controller *Users) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -66,6 +66,7 @@ func (controller *Users) Register(w http.ResponseWriter, r *http.Request) {
 		PhoneNumber:    request.PhoneNumber,
 		Email:          request.Email,
 		Password:       request.Password,
+		ImageUrl:       request.ImageUrl,
 	}
 
 	user, err := controller.users.Register(ctx, registerParams)
@@ -107,7 +108,7 @@ func (controller *Users) Register(w http.ResponseWriter, r *http.Request) {
 // @Param	request	body	LoginRequest	true	"Login request fields"
 // @Success	200			{object}	AuthResponse
 // @Failure	400,403,404,500	{object}	common.ErrResponseCode
-// @Router	/auth/login/	[post].
+// @Router	/auth/login	[post].
 func (controller *Users) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -201,7 +202,7 @@ func (controller *Users) Get(w http.ResponseWriter, r *http.Request) {
 // @Param	Authorization	header	string	false	"Bearer token to authorize access"
 // @Success	200		{object}	UserPublicView
 // @Failure 400,404,500	{object}	common.ErrResponseCode
-// @Router	/users/{id}/	[get].
+// @Router	/users/{id}	[get].
 func (controller *Users) GetByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -239,7 +240,7 @@ func (controller *Users) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param	request	body	UpdatePasswordRequest	true	"Update password fields"
 // @Success	200
 // @Failure	401,500	{object}	common.ErrResponseCode
-// @Router	/users/change-password/	[patch].
+// @Router	/users/change-password	[patch].
 func (controller *Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

@@ -11,7 +11,9 @@ import (
 	"github.com/zeebo/errs"
 
 	"one-help/app/console/controllers/common"
+	"one-help/app/fundraises"
 	"one-help/app/raffles"
+	"one-help/app/users/credentials"
 	"one-help/internal/logger"
 )
 
@@ -24,14 +26,16 @@ var (
 type Raffles struct {
 	log logger.Logger
 
-	raffles *raffles.Service
+	raffles    *raffles.Service
+	fundraises *fundraises.Service
 }
 
 // NewRaffles is a constructor for raffles controller.
-func NewRaffles(log logger.Logger, raffles *raffles.Service) *Raffles {
+func NewRaffles(log logger.Logger, raffles *raffles.Service, fundraises *fundraises.Service) *Raffles {
 	rafflesController := &Raffles{
-		log:     log,
-		raffles: raffles,
+		log:        log,
+		raffles:    raffles,
+		fundraises: fundraises,
 	}
 
 	return rafflesController
@@ -56,12 +60,36 @@ func (controller *Raffles) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// INFO: Caller creds.
+	creds, err := credentials.GetFromContext(ctx)
+	if err != nil {
+		common.NewErrResponse(http.StatusUnauthorized, err).Serve(controller.log, ErrRaffles, w)
+		return
+	}
+
+	fundraise, err := controller.fundraises.Get(ctx, request.FundraiseID)
+	if err != nil {
+		controller.log.Error("failed to get the fundraise related to the new raffle", ErrRaffles.Wrap(err))
+		if fundraises.ParamsError.Has(err) {
+			common.NewErrResponse(http.StatusBadRequest, errors.Unwrap(err)).Serve(controller.log, ErrRaffles, w)
+			return
+		}
+		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrRaffles, w)
+		return
+	}
+
+	if fundraise.OrganizerId != creds.UserID {
+		controller.log.Error("user is not allowed to create event for this fundraise", ErrRaffles.New("user is not allowed to create event for this fundraise"))
+		common.NewErrResponse(http.StatusForbidden, errors.New("user is not allowed to create event for this fundraise")).Serve(controller.log, ErrRaffles, w)
+		return
+	}
+
 	var giftsParams = make([]raffles.GiftCreateParams, len(request.Gifts))
 	for i, gift := range request.Gifts {
 		giftsParams[i] = raffles.GiftCreateParams{
 			Title:       gift.Title,
 			Description: gift.Description,
-			ImageLink:   gift.ImageLink,
+			ImageUrl:    gift.ImageUrl,
 		}
 	}
 
@@ -101,7 +129,7 @@ func (controller *Raffles) Create(w http.ResponseWriter, r *http.Request) {
 // @Param	Authorization	header	string	true	"Bearer token to authorize access"
 // @Param	limit			query	integer	false	"Items per page (positive number expected) [default value: 20]"
 // @Param	page			query	integer	false	"Number of the page (1...) [default value: 1]"
-// @Param	fundraiseId		query	uuid	false	"Optional filtration by fundraise"
+// @Param	fundraiseId		query	string	false	"Optional filtration by fundraise ID (UUID)"
 // @Success	200		{object}	common.Page[RaffleView]
 // @Failure	400,401,500	{object}	common.ErrResponseCode
 // @Router	/raffles/	[get].
@@ -162,7 +190,7 @@ func (controller *Raffles) List(w http.ResponseWriter, r *http.Request) {
 
 	for i, raffle := range list {
 		var gifts []raffles.Gift
-		gifts, err = controller.raffles.ListGifts(ctx, raffle.FundraiseID)
+		gifts, err = controller.raffles.ListGifts(ctx, raffle.ID)
 		if err != nil {
 			controller.log.Error("error while listing gifts", ErrRaffles.Wrap(err))
 			common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to list raffle gifts")).Serve(controller.log, ErrRaffles, w)
@@ -185,7 +213,7 @@ func (controller *Raffles) List(w http.ResponseWriter, r *http.Request) {
 // @Param	Authorization	header	string	false	"Bearer token to authorize access"
 // @Success	200		{object}	RaffleView
 // @Failure 400,401,404,500	{object}	common.ErrResponseCode
-// @Router	/raffles/{id}/	[get].
+// @Router	/raffles/{id}	[get].
 func (controller *Raffles) GetByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -207,7 +235,7 @@ func (controller *Raffles) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gifts, err := controller.raffles.ListGifts(ctx, raffle.FundraiseID)
+	gifts, err := controller.raffles.ListGifts(ctx, raffle.ID)
 	if err != nil {
 		controller.log.Error("error while listing gifts", ErrRaffles.Wrap(err))
 		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to list raffle gifts")).Serve(controller.log, ErrRaffles, w)

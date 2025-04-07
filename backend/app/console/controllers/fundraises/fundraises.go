@@ -60,7 +60,7 @@ func (controller *Fundraises) Create(w http.ResponseWriter, r *http.Request) {
 	// INFO: Caller creds.
 	creds, err := credentials.GetFromContext(ctx)
 	if err != nil {
-		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrFundraises, w)
+		common.NewErrResponse(http.StatusUnauthorized, err).Serve(controller.log, ErrFundraises, w)
 		return
 	}
 
@@ -70,6 +70,7 @@ func (controller *Fundraises) Create(w http.ResponseWriter, r *http.Request) {
 		Description:  request.Description,
 		TargetAmount: request.TargetAmount,
 		EndDate:      request.EndDate,
+		ImageUrl:     request.ImageUrl,
 	}
 
 	fundraise, err := controller.fundraises.Create(ctx, createParams)
@@ -170,7 +171,7 @@ func (controller *Fundraises) List(w http.ResponseWriter, r *http.Request) {
 // @Param	Authorization	header	string	false	"Bearer token to authorize access"
 // @Success	200		{object}	FundraiseView
 // @Failure 400,401,404,500	{object}	common.ErrResponseCode
-// @Router	/fundraises/{id}/	[get].
+// @Router	/fundraises/{id}	[get].
 func (controller *Fundraises) GetByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -214,14 +215,14 @@ func (controller *Fundraises) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param	page			query	integer	false	"Number of the page (1...) [default value: 1]"
 // @Success	200		{object}	common.Page[FundraiseView]
 // @Failure 400,401,404,500	{object}	common.ErrResponseCode
-// @Router	/fundraises/my/	[get].
+// @Router	/fundraises/my	[get].
 func (controller *Fundraises) ListMy(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// INFO: Caller creds.
 	creds, err := credentials.GetFromContext(ctx)
 	if err != nil {
-		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrFundraises, w)
+		common.NewErrResponse(http.StatusUnauthorized, err).Serve(controller.log, ErrFundraises, w)
 		return
 	}
 
@@ -292,7 +293,7 @@ func (controller *Fundraises) ListMy(w http.ResponseWriter, r *http.Request) {
 // @Param	request	body	DonateRequest	true	"Donate data fields"
 // @Success	200
 // @Failure	400,401,404,500	{object}	common.ErrResponseCode
-// @Router	/fundraises/{id}/donate/	[post].
+// @Router	/fundraises/{id}/donate	[post].
 func (controller *Fundraises) Donate(w http.ResponseWriter, r *http.Request) {
 	common.NewErrResponse(http.StatusNotImplemented, errors.New("not implemented")).Serve(controller.log, ErrFundraises, w)
 }

@@ -23,7 +23,7 @@ func TestFundraises(t *testing.T) {
 		FirstName: "John",
 		LastName:  "Doe",
 		Website:   "https://example.com",
-		FileName:  "john_doe.txt",
+		ImageUrl:  "john_doe.txt",
 	}
 
 	fundraise := fundraises.Fundraise{

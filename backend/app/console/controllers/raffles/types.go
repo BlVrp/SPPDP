@@ -23,29 +23,29 @@ type CreateRequest struct {
 type CreateGiftRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	ImageLink   string `json:"imageLink"`
+	ImageUrl    string `json:"imageUrl"`
 }
 
 // RaffleView defines raffle view type.
 type RaffleView struct {
-	ID              uuid.UUID
-	Title           string
-	Description     string
-	MinimumDonation float64
-	StartDate       time.Time
-	EndDate         time.Time
-	FundraiseID     uuid.UUID
-	Gifts           []GiftView
+	ID              uuid.UUID  `json:"id"`
+	Title           string     `json:"title"`
+	Description     string     `json:"description"`
+	MinimumDonation float64    `json:"minimumDonation"`
+	StartDate       time.Time  `json:"startDate"`
+	EndDate         time.Time  `json:"endDate"`
+	FundraiseID     uuid.UUID  `json:"fundraiseId"`
+	Gifts           []GiftView `json:"gifts"`
 }
 
 // GiftView describes gift view.
 type GiftView struct {
-	ID          uuid.UUID
-	Title       string
-	Description string
-	RaffleID    uuid.UUID
-	UserID      uuid.UUID
-	ImageLink   string
+	ID          uuid.UUID `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	RaffleID    uuid.UUID `json:"raffleId"`
+	UserID      uuid.UUID `json:"userId"`
+	ImageUrl    string    `json:"imageUrl"`
 }
 
 // ToRaffleView builds raffle view.
@@ -58,7 +58,7 @@ func ToRaffleView(raffle *raffles.Raffle, gifts []raffles.Gift) *RaffleView {
 			Description: gift.Description,
 			RaffleID:    gift.RaffleID,
 			UserID:      gift.UserID,
-			ImageLink:   gift.ImageLink,
+			ImageUrl:    gift.ImageUrl,
 		}
 	}
 

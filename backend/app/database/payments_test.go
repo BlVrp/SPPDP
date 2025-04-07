@@ -24,7 +24,7 @@ func TestPayments(t *testing.T) {
 		FirstName: "John",
 		LastName:  "Doe",
 		Website:   "https://example.com",
-		FileName:  "john_doe.txt",
+		ImageUrl:  "john_doe.txt",
 	}
 
 	fundraiseStatus := "Active"

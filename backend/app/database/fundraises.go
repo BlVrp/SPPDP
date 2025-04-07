@@ -39,9 +39,21 @@ func (db *fundraisesDB) Create(ctx context.Context, fundraise fundraises.Fundrai
 
 	defer DeferCommitRollback(tx, &err)
 
-	query := `INSERT INTO fundraises(fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
-	_, err = tx.ExecContext(ctx, query, fundraise.ID, fundraise.OrganizerId, fundraise.Title, fundraise.Description, fundraise.TargetAmount, fundraise.StartDate, fundraise.EndDate, fundraise.Status)
+	query := `INSERT INTO fundraises(fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status, file_name)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+	_, err = tx.ExecContext(
+		ctx,
+		query,
+		fundraise.ID,
+		fundraise.OrganizerId,
+		fundraise.Title,
+		fundraise.Description,
+		fundraise.TargetAmount,
+		fundraise.StartDate,
+		fundraise.EndDate,
+		fundraise.Status,
+		fundraise.ImageUrl,
+	)
 
 	return ErrFundraises.Wrap(err)
 }
@@ -53,7 +65,7 @@ func (db *fundraisesDB) Get(ctx context.Context, id uuid.UUID) (fundraises.Fundr
 		endDate   sql.NullTime
 	)
 
-	query := `SELECT fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status
+	query := `SELECT fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status, file_name
               FROM fundraises
               WHERE fundraise_id = $1`
 
@@ -67,6 +79,7 @@ func (db *fundraisesDB) Get(ctx context.Context, id uuid.UUID) (fundraises.Fundr
 		&fundraise.StartDate,
 		&endDate,
 		&fundraise.Status,
+		&fundraise.ImageUrl,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -95,7 +108,7 @@ func (db *fundraisesDB) List(ctx context.Context, params fundraises.ListParams) 
 		params.Page = 1
 	}
 
-	query := `SELECT fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status
+	query := `SELECT fundraise_id, organizer_id, title, description, target_amount, start_date, end_date, status, file_name
               FROM fundraises`
 
 	if params.OrganizerID != nil {
@@ -131,6 +144,7 @@ func (db *fundraisesDB) List(ctx context.Context, params fundraises.ListParams) 
 			&fundraise.StartDate,
 			&endDate,
 			&fundraise.Status,
+			&fundraise.ImageUrl,
 		)
 		if err != nil {
 			return nil, ErrFundraises.Wrap(err)
@@ -160,7 +174,7 @@ func (db *fundraisesDB) Update(ctx context.Context, fundraise fundraises.Fundrai
 	defer DeferCommitRollback(tx, &err)
 
 	query := `UPDATE fundraises
-	          SET organizer_id = $2, title = $3, description = $4, target_amount = $5, start_date = $6, end_date = $7, status = $8
+	          SET organizer_id = $2, title = $3, description = $4, target_amount = $5, start_date = $6, end_date = $7, status = $8, file_name = $9
 	          WHERE fundraise_id = $1`
 
 	var endDate interface{}
@@ -179,6 +193,7 @@ func (db *fundraisesDB) Update(ctx context.Context, fundraise fundraises.Fundrai
 		fundraise.StartDate,
 		endDate,
 		fundraise.Status,
+		fundraise.ImageUrl,
 	)
 	if err != nil {
 		return ErrFundraises.Wrap(err)

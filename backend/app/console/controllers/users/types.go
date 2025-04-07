@@ -18,6 +18,7 @@ type RegisterRequest struct {
 	PhoneNumber    string `json:"phoneNumber"`
 	Email          string `json:"email"`
 	Password       string `json:"password"`
+	ImageUrl       string `json:"imageUrl"`
 }
 
 // AuthResponse contains user and auth token.
@@ -64,7 +65,7 @@ type UserPublicView struct {
 	FirstName string    `json:"firstName"`
 	LastName  string    `json:"lastName"`
 	Website   string    `json:"website"`
-	FileName  string    `json:"fileName"`
+	ImageUrl  string    `json:"imageUrl"`
 	City      string    `json:"city"`
 }
 
@@ -75,7 +76,7 @@ func ToUserPublicView(user *users.User) *UserPublicView {
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Website:   user.Website,
-		FileName:  user.FileName,
+		ImageUrl:  user.ImageUrl,
 		City:      user.City,
 	}
 }

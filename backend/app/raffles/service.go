@@ -62,7 +62,7 @@ func (service *Service) Create(ctx context.Context, params CreateParams) (*Raffl
 			Description: gift.Description,
 			RaffleID:    raffle.ID,
 			UserID:      uuid.Nil,
-			ImageLink:   gift.ImageLink,
+			ImageUrl:    gift.ImageUrl,
 		}
 	}
 

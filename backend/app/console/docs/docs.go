@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/login/": {
+        "/auth/login": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -72,7 +72,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register/": {
+        "/auth/register": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -224,13 +224,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/events/{id}/": {
+        "/events/{id}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "Events"
                 ],
                 "summary": "Provides event by id",
                 "parameters": [
@@ -382,7 +382,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/fundraises/my/": {
+        "/fundraises/my": {
             "get": {
                 "produces": [
                     "application/json"
@@ -445,7 +445,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/fundraises/{id}/": {
+        "/fundraises/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -496,7 +496,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/fundraises/{id}/donate/": {
+        "/fundraises/{id}/donate": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -610,6 +610,12 @@ const docTemplate = `{
                         "description": "Number of the page (1...) [default value: 1]",
                         "name": "page",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional filtration by fundraise ID (UUID)",
+                        "name": "fundraiseId",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -689,7 +695,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/raffles/{id}/": {
+        "/raffles/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -780,7 +786,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/change-password/": {
+        "/users/change-password": {
             "patch": {
                 "consumes": [
                     "application/json"
@@ -829,7 +835,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{id}/": {
+        "/users/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -959,6 +965,9 @@ const docTemplate = `{
                 "fundraiseId": {
                     "type": "string"
                 },
+                "imageUrl": {
+                    "type": "string"
+                },
                 "maxParticipants": {
                     "type": "integer"
                 },
@@ -966,9 +975,6 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "startDate": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 },
                 "title": {
@@ -1000,6 +1006,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "imageUrl": {
+                    "type": "string"
+                },
                 "maxParticipants": {
                     "type": "integer"
                 },
@@ -1026,7 +1035,7 @@ const docTemplate = `{
                 "endDate": {
                     "type": "string"
                 },
-                "organizerId": {
+                "imageUrl": {
                     "type": "string"
                 },
                 "targetAmount": {
@@ -1053,6 +1062,9 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "imageUrl": {
                     "type": "string"
                 },
                 "organizerId": {
@@ -1086,7 +1098,7 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "imageLink": {
+                "imageUrl": {
                     "type": "string"
                 },
                 "title": {
@@ -1132,16 +1144,16 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "imageLink": {
+                "imageUrl": {
                     "type": "string"
                 },
-                "raffleID": {
+                "raffleId": {
                     "type": "string"
                 },
                 "title": {
                     "type": "string"
                 },
-                "userID": {
+                "userId": {
                     "type": "string"
                 }
             }
@@ -1155,7 +1167,7 @@ const docTemplate = `{
                 "endDate": {
                     "type": "string"
                 },
-                "fundraiseID": {
+                "fundraiseId": {
                     "type": "string"
                 },
                 "gifts": {
@@ -1213,6 +1225,9 @@ const docTemplate = `{
                 "firstName": {
                     "type": "string"
                 },
+                "imageUrl": {
+                    "type": "string"
+                },
                 "lastName": {
                     "type": "string"
                 },
@@ -1250,13 +1265,13 @@ const docTemplate = `{
                 "city": {
                     "type": "string"
                 },
-                "fileName": {
-                    "type": "string"
-                },
                 "firstName": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "imageUrl": {
                     "type": "string"
                 },
                 "lastName": {
@@ -1276,13 +1291,13 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "fileName": {
-                    "type": "string"
-                },
                 "firstName": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "imageUrl": {
                     "type": "string"
                 },
                 "lastName": {
