@@ -13,6 +13,7 @@ import (
 
 	"one-help/app"
 	"one-help/app/donations"
+	"one-help/app/events"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/payments"
@@ -98,6 +99,11 @@ func (db *database) FundraiseStatuses() fundraisestatuses.DB {
 // Fundraises provides access to fundraises DB.
 func (db *database) Fundraises() fundraises.DB {
 	return newFundraisesDB(db.conn)
+}
+
+// Events provides access to events DB.
+func (db *database) Events() events.DB {
+	return newEventsDB(db.conn)
 }
 
 // Donations provides access to donations DB.

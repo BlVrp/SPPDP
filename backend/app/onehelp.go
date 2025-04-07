@@ -2,6 +2,7 @@ package app
 
 import (
 	"one-help/app/donations"
+	"one-help/app/events"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/payments"
@@ -32,6 +33,9 @@ type DB interface {
 
 	// Fundraises provides access to fundraises DB.
 	Fundraises() fundraises.DB
+
+	// Events provides access to events DB.
+	Events() events.DB
 
 	// Donations provides access to donations DB.
 	Donations() donations.DB
