@@ -20,7 +20,7 @@ func TestUsers(t *testing.T) {
 		FirstName: "John",
 		LastName:  "Doe",
 		Website:   "https://example.com",
-		FileName:  "john_doe.txt",
+		ImageUrl:  "john_doe.txt",
 	}
 	dbtesting.Run(t, database.Config{}, func(ctx context.Context, t *testing.T, db app.DB) {
 		usersRepository := db.Users()

@@ -38,7 +38,7 @@ func (db *usersDB) Create(ctx context.Context, user users.User) error {
 
 	query := `INSERT INTO users(user_id, first_name, last_name, website, file_name)
               VALUES ($1, $2, $3, $4, $5)`
-	_, err = tx.ExecContext(ctx, query, user.ID, user.FirstName, user.LastName, user.Website, user.FileName)
+	_, err = tx.ExecContext(ctx, query, user.ID, user.FirstName, user.LastName, user.Website, user.ImageUrl)
 	if err != nil {
 		return ErrUsers.Wrap(err)
 	}
@@ -68,7 +68,7 @@ func (db *usersDB) Get(ctx context.Context, id uuid.UUID) (users.User, error) {
               FROM users u LEFT JOIN delivery_addresses d ON u.user_id = d.user_id
               WHERE u.user_id = $1`
 	row := db.conn.QueryRowContext(ctx, query, id)
-	err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Website, &user.FileName, &city, &post, &postDepartment)
+	err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Website, &user.ImageUrl, &city, &post, &postDepartment)
 	if err != nil {
 		if errs.Is(err, sql.ErrNoRows) {
 			return users.User{}, ErrUsers.Wrap(users.ErrNoUser)
@@ -96,7 +96,7 @@ func (db *usersDB) Update(ctx context.Context, user users.User) error {
 	query := `UPDATE users
               SET first_name = $2, last_name = $3, website = $4, file_name = $5
               WHERE user_id = $1`
-	_, err = tx.ExecContext(ctx, query, user.ID, user.FirstName, user.LastName, user.Website, user.FileName)
+	_, err = tx.ExecContext(ctx, query, user.ID, user.FirstName, user.LastName, user.Website, user.ImageUrl)
 	if err != nil {
 		return ErrUsers.Wrap(err)
 	}

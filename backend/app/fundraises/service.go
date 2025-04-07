@@ -55,6 +55,7 @@ func (service *Service) Create(ctx context.Context, params CreateParams) (*Fundr
 		StartDate:    time.Now().UTC(),
 		EndDate:      params.EndDate,
 		Status:       statuses.ActiveStatus,
+		ImageUrl:     params.ImageUrl,
 	}
 
 	err := service.fundraises.Create(ctx, *fundraise)

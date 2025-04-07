@@ -17,7 +17,7 @@ type User struct {
 	FirstName string
 	LastName  string
 	Website   string
-	FileName  string
+	ImageUrl  string
 
 	DeliveryAddress
 }
@@ -52,7 +52,7 @@ type RegisterParams struct {
 	FirstName string
 	LastName  string
 	Website   string
-	FileName  string
+	ImageUrl  string
 
 	City           string
 	Post           string

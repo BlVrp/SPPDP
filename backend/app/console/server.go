@@ -85,7 +85,7 @@ func NewServer(
 	usersController := userscontroller.NewUsers(log, users)
 	fundraisesController := fundraisescontroller.NewFundraises(log, fundraises)
 	eventsController := eventscontroller.NewEvents(log, events, fundraises)
-	rafflesController := rafflescontroller.NewRaffles(log, raffles)
+	rafflesController := rafflescontroller.NewRaffles(log, raffles, fundraises)
 
 	router := mux.NewRouter()
 	apiRouter := router.PathPrefix("/api/v0").Subrouter()
@@ -215,5 +215,5 @@ func (server *Server) withAuth(handler http.Handler, optionalAuth bool) http.Han
 }
 
 func (server *Server) withAuthMiddleware(handler http.Handler) http.Handler {
-	return server.withAuth(handler, true)
+	return server.withAuth(handler, false)
 }

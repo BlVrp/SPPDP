@@ -11,12 +11,12 @@ type Gift struct {
 	Description string
 	RaffleID    uuid.UUID
 	UserID      uuid.UUID
-	ImageLink   string
+	ImageUrl    string
 }
 
 // GiftCreateParams defines needed parameters to create a gift.
 type GiftCreateParams struct {
 	Title       string
 	Description string
-	ImageLink   string
+	ImageUrl    string
 }
