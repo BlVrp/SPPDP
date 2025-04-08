@@ -48,6 +48,7 @@ export default function CreateFundraise() {
           title: data.title,
           description: data.description,
           targetAmount: Number(data.goal),
+          imageUrl: data.image, 
           endDate: new Date(data.endDate).toISOString(),
           organizerId,
         }),
@@ -72,91 +73,108 @@ export default function CreateFundraise() {
       <Text className="text-2xl font-bold text-gray-msg mb-4">
         Створити збір
       </Text>
+      
       <View className="flex flex-col gap-4">
-        <Controller
-          control={control}
-          name="title"
-          rules={{ required: "Назва збору є обов'язковою" }}
-          render={({ field: { onChange, value } }) => (
-            <TextInput
-              label="Назва збору"
-              required="*"
-              placeholder="Дрон для бригади"
-              placeholderTextColor="#9CA3AF"
-              onChangeText={onChange}
-              value={value}
-              error={!!errors.title}
-              errorMessage={errors.title?.message?.toString()}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="description"
-          rules={{ required: "Опис є обов'язковим" }}
-          render={({ field: { onChange, value } }) => (
-            <TextInput
-              label="Опис"
-              placeholder="Детально опишіть, на що збір"
-              placeholderTextColor="#9CA3AF"
-              required="*"
-              multiline
-              onChangeText={onChange}
-              value={value}
-              error={!!errors.description}
-              errorMessage={errors.description?.message?.toString()}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="goal"
-          rules={{ required: "Необхідна сума є обов'язковою" }}
-          render={({ field: { onChange, value } }) => (
-            <TextInput
-              label="Необхідна сума (грн)"
-              required="*"
-              placeholder="50000"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="numeric"
-              onChangeText={onChange}
-              value={value}
-              error={!!errors.goal}
-              errorMessage={errors.goal?.message?.toString()}
-            />
-          )}
-        />
-
-
-<Controller
-  control={control}
-  name="endDate"
-  rules={{ required: "Дата завершення є обов'язковою" }}
-  render={({ field: { onChange, value } }) => (
-    <View className="flex flex-col">
-      <Text className="text-gray-700 mb-1">Дата завершення *</Text>
-      <RNTextInput
-        value={value}
-        onChangeText={onChange}
-        placeholder="2025-05-27"
+  <Controller
+    control={control}
+    name="title"
+    rules={{ required: "Назва збору є обов'язковою" }}
+    render={({ field: { onChange, value } }) => (
+      <TextInput
+        label="Назва збору"
+        required="*"
+        placeholder="Дрон для бригади"
         placeholderTextColor="#9CA3AF"
-        keyboardType="default"
-        className="border border-gray-300 rounded-lg p-3 bg-gray-100 text-gray-700"
-        {...(Platform.OS === 'web' ? { type: 'date' } : {})}
+        onChangeText={onChange}
+        value={value}
+        error={!!errors.title}
+        errorMessage={errors.title?.message?.toString()}
       />
-      {errors.endDate && (
-        <Text className="text-red-500 text-sm mt-1">
-          {errors.endDate.message?.toString()}
-        </Text>
-      )}
-    </View>
-  )}
-/>
+    )}
+  />
 
+  <Controller
+    control={control}
+    name="description"
+    rules={{ required: "Опис є обов'язковим" }}
+    render={({ field: { onChange, value } }) => (
+      <TextInput
+        label="Опис"
+        placeholder="Детально опишіть, на що збір"
+        placeholderTextColor="#9CA3AF"
+        required="*"
+        multiline
+        onChangeText={onChange}
+        value={value}
+        error={!!errors.description}
+        errorMessage={errors.description?.message?.toString()}
+      />
+    )}
+  />
 
+  <Controller
+    control={control}
+    name="goal"
+    rules={{ required: "Необхідна сума є обов'язковою" }}
+    render={({ field: { onChange, value } }) => (
+      <TextInput
+        label="Необхідна сума (грн)"
+        required="*"
+        placeholder="50000"
+        placeholderTextColor="#9CA3AF"
+        keyboardType="numeric"
+        onChangeText={onChange}
+        value={value}
+        error={!!errors.goal}
+        errorMessage={errors.goal?.message?.toString()}
+      />
+    )}
+  />
+
+  <Controller
+    control={control}
+    name="image"
+    rules={{ required: "Посилання на фото є обов'язковим" }}
+    render={({ field: { onChange, value } }) => (
+      <TextInput
+        label="Посилання на фото"
+        required="*"
+        placeholder="https://example.com/photo.jpg"
+        placeholderTextColor="#9CA3AF"
+        onChangeText={onChange}
+        value={value}
+        error={!!errors.image}
+        errorMessage={errors.image?.message?.toString()}
+      />
+    )}
+  />
+
+  <Controller
+    control={control}
+    name="endDate"
+    rules={{ required: "Дата завершення є обов'язковою" }}
+    render={({ field: { onChange, value } }) => (
+      <View className="flex flex-col">
+        <Text className="text-gray-700 mb-1">Дата завершення *</Text>
+        <RNTextInput
+          value={value}
+          onChangeText={onChange}
+          placeholder="2025-05-27"
+          placeholderTextColor="#9CA3AF"
+          keyboardType="default"
+          className="border border-gray-300 rounded-lg p-3 bg-gray-100 text-gray-700"
+          {...(Platform.OS === 'web' ? { type: 'date' } : {})}
+        />
+        {errors.endDate && (
+          <Text className="text-red-500 text-sm mt-1">
+            {errors.endDate.message?.toString()}
+          </Text>
+        )}
       </View>
+    )}
+  />
+</View>
+
 
       <TouchableOpacity
         onPress={handleSubmit(onSubmit)}

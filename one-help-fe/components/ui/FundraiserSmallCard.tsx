@@ -9,7 +9,7 @@ interface FundraiseSmallCardProps {
     id?: string;
     title: string;
     description: string;
-    image?: string;
+    imageUrl?: string;
     targetAmount?: number;
     filledAmount?: number;
   };
@@ -26,17 +26,20 @@ export default function FundraiseSmallCard({
   return (
     <View className="bg-white p-4 rounded-2xl mb-4">
       <View className="flex-row items-center">
-        <Image
-          source={
-            fundraiser.image?.length ? { uri: fundraiser.image } : defaultImage
-          }
-          style={{
-            width: 54,
-            height: 54,
-            borderRadius: 8,
-            marginRight: 12,
-          }}
-        />
+      <Image
+  source={
+    fundraiser.imageUrl?.trim().length
+      ? { uri: fundraiser.imageUrl.trim() }
+      : defaultImage
+  }
+  style={{
+    width: 54,
+    height: 54,
+    borderRadius: 8,
+    marginRight: 12,
+  }}
+/>
+
         <View className="flex-1">
           <Text className="text-lg font-bold text-black">
             {fundraiser.title}

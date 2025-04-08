@@ -77,11 +77,16 @@ export default function DetailedFundraiseCard() {
   return (
     <ScrollView className="flex-1 bg-white p-4">
       <View className="bg-accent p-4 rounded-2xl">
-        <Image
-          source={fundraiser.image?.length ? { uri: fundraiser.image } : defaultImage}
-          className="w-full h-32 rounded-lg mb-3 self-center"
-          resizeMode="cover"
-        />
+      <Image
+  source={
+    fundraiser.imageUrl?.trim().length
+      ? { uri: fundraiser.imageUrl.trim() }
+      : defaultImage
+  }
+  className="w-full h-32 rounded-lg mb-3 self-center"
+  resizeMode="cover"
+/>
+
 
         <Text className="text-xl font-bold text-black text-center mb-2">
           {fundraiser.title}

@@ -16,9 +16,9 @@ export default function RecentFunsraises() {
         Alert.alert("Помилка", "Користувач не авторизований");
         return;
       }
-
+  
       const response = await fetch(
-        "http://localhost:8080/api/v0/fundraises?limit=2&page=1",
+        "http://localhost:8080/api/v0/fundraises",
         {
           method: "GET",
           headers: {
@@ -26,20 +26,26 @@ export default function RecentFunsraises() {
           },
         }
       );
-
+  
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Помилка отримання зборів");
       }
-
+  
       const result = await response.json();
-      setFundraisers(result.data || []);
+  
+      const sorted = (result.data || [])
+        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+        .slice(0, 2);
+  
+      setFundraisers(sorted);
     } catch (error: any) {
       Alert.alert("Помилка", error.message);
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchRecentFundraisers();

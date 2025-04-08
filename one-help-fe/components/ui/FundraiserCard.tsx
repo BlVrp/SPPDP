@@ -11,19 +11,13 @@ interface FundraiserCardProps {
     description: string;
     targetAmount: number;
     filledAmount: number;
-    image?: string; // optional
+    imageUrl: string;
   };
 }
 
 export default function FundraiserCard({ fundraiser }: FundraiserCardProps) {
-  const {
-    id,
-    title,
-    description,
-    targetAmount,
-    filledAmount,
-    image,
-  } = fundraiser;
+  const { id, title, description, targetAmount, filledAmount, imageUrl } =
+    fundraiser;
 
   const progress = Math.min(filledAmount / targetAmount || 0, 1);
 
@@ -35,9 +29,8 @@ export default function FundraiserCard({ fundraiser }: FundraiserCardProps) {
       }}
     >
       <View className="w-full bg-white rounded-lg p-4 mb-4 shadow">
-      
       <Image
-  source={fundraiser.image?.length ? { uri: fundraiser.image } : defaultImage}
+  source={imageUrl?.length ? { uri: imageUrl } : defaultImage}
   className="w-full h-32 rounded-lg mb-3 self-center"
   resizeMode="cover"
 />
