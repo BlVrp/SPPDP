@@ -47,6 +47,7 @@ func ToFundraiseView(fundraise *fundraises.Fundraise, filled float64) *Fundraise
 	}
 }
 
-// DonateRequest defines request values for donate endpoint.
-type DonateRequest struct {
+// DonateResponse defines donate endpoint response object.
+type DonateResponse struct {
+	PaymentURL string `json:"paymentUrl"`
 }

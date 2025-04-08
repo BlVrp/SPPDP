@@ -382,6 +382,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/fundraises/donations/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Donations"
+                ],
+                "summary": "Finishes payment process (for internal use).",
+                "responses": {
+                    "301": {
+                        "description": "Moved Permanently"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    }
+                }
+            }
+        },
         "/fundraises/my": {
             "get": {
                 "produces": [
@@ -498,16 +532,13 @@ const docTemplate = `{
         },
         "/fundraises/{id}/donate": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Fundraises"
                 ],
-                "summary": "Creates new donate to fundraise.",
+                "summary": "Creates new payment url to donate to fundraise.",
                 "parameters": [
                     {
                         "type": "string",
@@ -515,20 +546,14 @@ const docTemplate = `{
                         "name": "Authorization",
                         "in": "header",
                         "required": true
-                    },
-                    {
-                        "description": "Donate data fields",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/fundraises.DonateRequest"
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fundraises.DonateResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1046,8 +1071,13 @@ const docTemplate = `{
                 }
             }
         },
-        "fundraises.DonateRequest": {
-            "type": "object"
+        "fundraises.DonateResponse": {
+            "type": "object",
+            "properties": {
+                "paymentUrl": {
+                    "type": "string"
+                }
+            }
         },
         "fundraises.FundraiseView": {
             "type": "object",
