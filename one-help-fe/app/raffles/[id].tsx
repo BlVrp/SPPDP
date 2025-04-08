@@ -138,10 +138,10 @@ export default function RaffleDetail() {
             {raffle.description}
           </Text>
 
-          <Text className="text-grey-msg text-center mt-2">
+          {/* <Text className="text-grey-msg text-center mt-2">
             📆 Донати приймаються до{" "}
             {new Date(raffle.endDate).toLocaleDateString("uk-UA")}
-          </Text>
+          </Text> */}
         </View>
       </View>
     </ScrollView>

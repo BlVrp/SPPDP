@@ -37,10 +37,10 @@ export default function RaffleCard({ raffle }: { raffle: any }) {
             {raffle.description}
           </Text>
 
-          <Text className="text-grey-msg mt-1">
+          {/* <Text className="text-grey-msg mt-1">
             📅 {formatDate(raffle.start_date)} 
             {raffle.end_date ? ` — ${formatDate(raffle.end_date)}` : ""}
-          </Text>
+          </Text> */}
 
           <Text className="text-grey-msg">
             💰 Мін. внесок:{" "}
