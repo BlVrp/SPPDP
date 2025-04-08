@@ -23,12 +23,12 @@ export default function FundraisersList() {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
-
+  
       if (!token) {
         Alert.alert("Помилка", "Користувач не авторизований");
         return;
       }
-
+  
       const response = await fetch(
         `http://localhost:8080/api/v0/fundraises?limit=${LIMIT}&page=${page}`,
         {
@@ -37,21 +37,33 @@ export default function FundraisersList() {
           },
         }
       );
-
+  
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Помилка отримання зборів");
       }
-
-      const result = await response.json();
-      setFundraisers(result.data || []);
-      setHasMore((result.data?.length || 0) === LIMIT);
+  
+      const currentResult = await response.json();
+      setFundraisers(currentResult.data || []);
+  
+      const nextResponse = await fetch(
+        `http://localhost:8080/api/v0/fundraises?limit=${LIMIT}&page=${page + 1}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const nextResult = await nextResponse.json();
+      setHasMore((nextResult.data?.length || 0) > 0);
     } catch (err: any) {
       Alert.alert("Помилка", err.message);
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchFundraisers();

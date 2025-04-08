@@ -1,32 +1,54 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, Alert } from "react-native";
 import { Link } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import SmallRaffleCard from "@/components/ui/RaffleSmallCard";
 
 export default function ActiveRafflesList() {
   const [raffles, setRaffles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchRaffles = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Помилка", "Користувач не авторизований");
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:8080/api/v0/raffles",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Не вдалося отримати розіграші");
+      }
+
+      const result = await response.json();
+
+      const sorted = result.data
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
+        )
+        .slice(0, 2);
+
+      setRaffles(sorted);
+    } catch (err: any) {
+      Alert.alert("Помилка", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setTimeout(() => {
-      setRaffles([
-        {
-          id: "1",
-          image:
-            "https://soundmagcdn.fra1.cdn.digitaloceanspaces.com/news/816/byZvgJY1WNcsfWAs.webp",
-          title: "Ліжка для війська",
-          description:
-            "2 принти картини «Свята земля» з автографами KALUSH ORCHESTRA",
-          minDonation: 100,
-        },
-        {
-          id: "2",
-          image: "https://s.dou.ua/img/announces/dou_5.png",
-          title: "Допомога фронту",
-          description: "Унікальна футболка з автографами",
-          minDonation: 150,
-        },
-      ]);
-    }, 1000);
+    fetchRaffles();
   }, []);
 
   return (
@@ -38,13 +60,17 @@ export default function ActiveRafflesList() {
         </Link>
       </View>
 
-      <FlatList
-        data={raffles}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <SmallRaffleCard raffle={item} />}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#2563EB" />
+      ) : (
+        <FlatList
+          data={raffles}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <SmallRaffleCard raffle={item} />}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        />
+      )}
     </View>
   );
 }
