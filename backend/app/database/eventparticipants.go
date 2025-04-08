@@ -48,12 +48,17 @@ func (db *eventParticipantsDB) Create(ctx context.Context, eventParticipant even
 
 // List returns all the event participants.
 func (db *eventParticipantsDB) List(ctx context.Context, params eventparticipants.ListParams) ([]eventparticipants.EventParticipant, error) {
-	var args = make([]any, 0, 3)
+	var args = make([]any, 0, 4)
+
+	var pagingEnabled = true
+
 	if params.Limit == 0 {
 		params.Limit = 20
+		pagingEnabled = false
 	}
 	if params.Page == 0 {
 		params.Page = 1
+		pagingEnabled = false
 	}
 
 	query := `SELECT event_id, user_id
@@ -64,7 +69,12 @@ func (db *eventParticipantsDB) List(ctx context.Context, params eventparticipant
 		query += fmt.Sprintf(" WHERE user_id = $%d ", len(args))
 	}
 
-	{ // INFO: Paging.
+	if params.EventID != nil {
+		args = append(args, *params.EventID)
+		query += fmt.Sprintf(" WHERE event_id = $%d ", len(args))
+	}
+
+	if pagingEnabled { // INFO: Paging.
 		args = append(args, params.Limit)
 		query += fmt.Sprintf(" LIMIT $%d", len(args))
 		args = append(args, (params.Page-1)*params.Limit)

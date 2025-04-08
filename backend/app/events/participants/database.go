@@ -24,7 +24,8 @@ type DB interface {
 
 // ListParams defines params for list method.
 type ListParams struct {
-	UserID *uuid.UUID
-	Limit  int
-	Page   int
+	UserID  *uuid.UUID
+	EventID *uuid.UUID
+	Limit   int
+	Page    int
 }

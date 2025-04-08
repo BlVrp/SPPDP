@@ -6,6 +6,8 @@ import (
 	"one-help/app/console/controllers/fundraises"
 	"one-help/app/events"
 
+	eventparticipants "one-help/app/events/participants"
+
 	"github.com/google/uuid"
 )
 
@@ -91,5 +93,17 @@ func ToEventViewExtended(e *events.Event, fundraise fundraises.FundraiseView) Ev
 		CreatedAt:       e.CreatedAt,
 
 		Fundraise: fundraise,
+	}
+}
+
+type EventParticipantView struct {
+	UserID  uuid.UUID `json:"userId"`
+	EventID uuid.UUID `json:"eventId"`
+}
+
+func ToEventParticipantView(e *eventparticipants.EventParticipant) EventParticipantView {
+	return EventParticipantView{
+		UserID:  e.UserID,
+		EventID: e.EventID,
 	}
 }
