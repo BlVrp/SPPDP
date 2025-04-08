@@ -9,9 +9,12 @@ import (
 
 	"one-help/app"
 	"one-help/app/console"
+	"one-help/app/donations"
 	"one-help/app/events"
 	"one-help/app/fundraises"
+	"one-help/app/payments"
 	"one-help/app/raffles"
+	"one-help/app/stripe"
 	"one-help/app/users"
 	"one-help/app/users/credentials"
 	"one-help/internal/logger"
@@ -25,6 +28,7 @@ type Config struct {
 	Users struct {
 		Config users.Config `envPrefix:"USERS_"`
 	}
+	Stripe stripe.Config `envPrefix:"STRIPE_"`
 }
 
 // Peer is the representation of a server.
@@ -46,8 +50,10 @@ type Peer struct {
 	}
 
 	Fundraises struct {
-		DB      fundraises.DB
-		Service *fundraises.Service
+		DB          fundraises.DB
+		DonationsDB donations.DB
+		PaymentDB   payments.DB
+		Service     *fundraises.Service
 	}
 
 	Events struct {
@@ -58,6 +64,10 @@ type Peer struct {
 	Raffles struct {
 		DB      raffles.DB
 		Service *raffles.Service
+	}
+
+	Stripe struct {
+		Charger *stripe.Charger
 	}
 }
 
@@ -76,10 +86,22 @@ func New(ctx context.Context, logger logger.Logger, config Config, db app.DB) (p
 		peer.Users.Service = users.NewService(peer.Log, peer.Config.Users.Config, peer.Users.DB, peer.Users.CredsDB)
 	}
 
+	{ // stripe setup
+		peer.Stripe.Charger = stripe.NewCharger(peer.Log, peer.Config.Stripe)
+	}
+
 	// users setup
 	{
 		peer.Fundraises.DB = db.Fundraises()
-		peer.Fundraises.Service = fundraises.NewService(peer.Log, peer.Fundraises.DB)
+		peer.Fundraises.DonationsDB = db.Donations()
+		peer.Fundraises.PaymentDB = db.Payments()
+		peer.Fundraises.Service = fundraises.NewService(
+			peer.Log,
+			peer.Fundraises.DB,
+			peer.Fundraises.DonationsDB,
+			peer.Fundraises.PaymentDB,
+			peer.Stripe.Charger,
+		)
 	}
 
 	// events setup

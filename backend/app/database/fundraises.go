@@ -208,3 +208,20 @@ func (db *fundraisesDB) Delete(ctx context.Context, id uuid.UUID) error {
 	_, err := db.conn.ExecContext(ctx, query, id)
 	return ErrFundraises.Wrap(err)
 }
+
+// GetFilled returns collected funds on the provided fundraise.
+func (db *fundraisesDB) GetFilled(ctx context.Context, id uuid.UUID) (filled float64, err error) {
+	query := `SELECT COALESCE(SUM(amount), 0)
+              FROM fundraises
+              INNER JOIN donations ON fundraises.fundraise_id = donations.fundraise_id
+              INNER JOIN payments ON donations.donation_id = payments.donation_id
+              WHERE fundraises.fundraise_id = $1 AND payments.confirmed`
+
+	row := db.conn.QueryRowContext(ctx, query, id)
+	err = row.Scan(&filled)
+	if err != nil {
+		return -1, ErrFundraises.Wrap(err)
+	}
+
+	return filled, nil
+}

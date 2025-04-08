@@ -10,6 +10,7 @@ import (
 	"one-help/app"
 	"one-help/app/database"
 	"one-help/app/database/dbtesting"
+	"one-help/app/payments"
 )
 
 func TestPaymentTypes(t *testing.T) {
@@ -21,8 +22,8 @@ func TestPaymentTypes(t *testing.T) {
 			require.NoError(t, err)
 			storedTypes, err := paymentTypesRepository.List(ctx)
 			require.NoError(t, err)
-			assert.Equal(t, paymentType, storedTypes[0])
-			assert.Equal(t, 1, len(storedTypes))
+			require.Equal(t, 2, len(storedTypes))
+			assert.Contains(t, storedTypes, paymentType)
 		})
 
 		t.Run("Delete", func(t *testing.T) {
@@ -30,7 +31,8 @@ func TestPaymentTypes(t *testing.T) {
 			require.NoError(t, err)
 			storedTypes, err := paymentTypesRepository.List(ctx)
 			require.NoError(t, err)
-			assert.Empty(t, storedTypes)
+			require.Equal(t, 1, len(storedTypes))
+			assert.Contains(t, storedTypes, payments.TypeStripe)
 		})
 	})
 }

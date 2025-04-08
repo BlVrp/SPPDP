@@ -26,6 +26,8 @@ type DB interface {
 	Update(ctx context.Context, fundraise Fundraise) error
 	// Delete fundraise from the database.
 	Delete(ctx context.Context, id uuid.UUID) error
+	// GetFilled returns collected funds on the provided fundraise.
+	GetFilled(ctx context.Context, id uuid.UUID) (float64, error)
 }
 
 // ListParams defines params for list method.

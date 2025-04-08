@@ -33,3 +33,14 @@ type CreateParams struct {
 	EndDate      time.Time
 	ImageUrl     string
 }
+
+// RegisterDonateParams defines values needed to register new donate.
+type RegisterDonateParams struct {
+	FundraiseID uuid.UUID
+	UserID      uuid.UUID
+}
+
+// RegisterDonateResult defines donate register result values.
+type RegisterDonateResult struct {
+	PaymentURL string
+}
