@@ -58,7 +58,7 @@ func (service *Service) Register(ctx context.Context, params RegisterParams) (*U
 		FirstName: params.FirstName,
 		LastName:  params.LastName,
 		Website:   params.Website,
-		FileName:  params.FileName,
+		ImageUrl:  params.ImageUrl,
 		DeliveryAddress: DeliveryAddress{
 			City:           params.City,
 			Post:           params.Post,

@@ -1,0 +1,1 @@
+ALTER TABLE gifts ALTER COLUMN user_id SET NOT NULL;

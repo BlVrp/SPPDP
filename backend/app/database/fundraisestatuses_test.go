@@ -21,8 +21,8 @@ func TestFundraiseStatuses(t *testing.T) {
 			require.NoError(t, err)
 			storedStatuses, err := fundraiseStatusesRepository.List(ctx)
 			require.NoError(t, err)
-			assert.Equal(t, status, storedStatuses[0])
-			assert.Equal(t, 1, len(storedStatuses))
+			require.Equal(t, 6, len(storedStatuses))
+			assert.Contains(t, storedStatuses, status)
 		})
 
 		t.Run("Delete", func(t *testing.T) {
@@ -30,7 +30,7 @@ func TestFundraiseStatuses(t *testing.T) {
 			require.NoError(t, err)
 			storedStatuses, err := fundraiseStatusesRepository.List(ctx)
 			require.NoError(t, err)
-			assert.Empty(t, storedStatuses)
+			require.Equal(t, 5, len(storedStatuses))
 		})
 	})
 }

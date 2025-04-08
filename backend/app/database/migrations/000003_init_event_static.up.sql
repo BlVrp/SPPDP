@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS event_statuses (
+status VARCHAR PRIMARY KEY
+);
+
+INSERT INTO event_statuses(status) VALUES
+('ACTIVE'),
+('DONE'),
+('POSTPONED'),
+('CANCELLED'),
+('TRANSFERRED')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO event_formats(format) VALUES
+('IN_PERSON'),
+('ONLINE'),
+('HYBRID')
+ON CONFLICT DO NOTHING;
+

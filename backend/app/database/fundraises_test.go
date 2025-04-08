@@ -23,7 +23,7 @@ func TestFundraises(t *testing.T) {
 		FirstName: "John",
 		LastName:  "Doe",
 		Website:   "https://example.com",
-		FileName:  "john_doe.txt",
+		ImageUrl:  "john_doe.txt",
 	}
 
 	fundraise := fundraises.Fundraise{
@@ -40,9 +40,7 @@ func TestFundraises(t *testing.T) {
 	dbtesting.Run(t, database.Config{}, func(ctx context.Context, t *testing.T, db app.DB) {
 		fundraiseRepository := db.Fundraises()
 		usersRepository := db.Users()
-		fundraiseStatusesRepository := db.FundraiseStatuses()
 		t.Run("Create&Get", func(t *testing.T) {
-			require.NoError(t, fundraiseStatusesRepository.Create(ctx, fundraise.Status))
 			require.NoError(t, usersRepository.Create(ctx, user))
 			require.NoError(t, fundraiseRepository.Create(ctx, fundraise))
 
