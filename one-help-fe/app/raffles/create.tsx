@@ -16,19 +16,20 @@ export default function CreateRaffle() {
   const [fundraisers, setFundraisers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       title: "",
       description: "",
+      start_date: null,
+      end_date: null,
+      format: "",
+      max_participants: "",
       minimum_donation: "",
-      fundraiser_id: "",
-      gifts: [{ title: "", description: "", image: "" }],
+      address: "",
+      fundraise_id: "",
     },
   });
+  
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -176,6 +177,14 @@ export default function CreateRaffle() {
               label="Збір"
               placeholder="Оберіть збір"
               onChange={(selected: any) => onChange(selected.id)}
+              style={{
+                borderWidth: 1,
+                borderColor: '#D1D5DB',
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                backgroundColor: 'white',
+              }}
               value={value}
               error={!!errors.fundraiser_id}
               errorMessage={errors?.fundraiser_id?.message}

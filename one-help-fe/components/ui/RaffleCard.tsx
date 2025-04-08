@@ -50,8 +50,7 @@ export default function RaffleCard({ raffle }: { raffle: any }) {
           </Text>
 
           <TouchableOpacity
-            onPress={() => console.log("Участь у розіграші")}
-            className="bg-primary rounded-md p-2 mt-4 items-center"
+            className="bg-primary rounded-md p-1 mt-4 items-center"
           >
             <Text className="text-white text-lg font-semibold">
               Взяти участь 🎟️

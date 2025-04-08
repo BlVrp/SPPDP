@@ -1,18 +1,20 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import { useRouter, Link } from "expo-router";
+import { useRouter } from "expo-router";
 
 export default function EventCard({ event }: { event: any }) {
   const router = useRouter();
 
+  const navigateToEvent = () => {
+    router.push({
+      pathname: "/events/[id]",
+      params: { id: `${event.id}` },
+    });
+  };
+
   return (
     <View className="bg-accent p-4 rounded-lg mb-4">
-      <Link
-        href={{
-          pathname: "/events/[id]",
-          params: { id: `${event.id}` },
-        }}
-      >
+      <TouchableOpacity onPress={navigateToEvent} activeOpacity={0.8}>
         <View className="w-full">
           <Image
             source={{ uri: event.image }}
@@ -35,17 +37,17 @@ export default function EventCard({ event }: { event: any }) {
               ? "Безкоштовно"
               : `${event.minimum_donation} грн`}
           </Text>
-
-          <TouchableOpacity
-            onPress={() => console.log("Реєстрація на подію pressed")}
-            className="bg-primary rounded-md p-2 mt-4 items-center"
-          >
-            <Text className="text-white text-lg font-semibold">
-              Зареєструватись 📝
-            </Text>
-          </TouchableOpacity>
         </View>
-      </Link>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={navigateToEvent}
+        className="bg-primary rounded-lg p-1 mt-3 items-center"
+      >
+        <Text className="text-white text-lg font-semibold">
+          Зареєструватись 📝
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
