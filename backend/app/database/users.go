@@ -124,3 +124,83 @@ func (db *usersDB) Delete(ctx context.Context, id uuid.UUID) error {
 	_, err := db.conn.ExecContext(ctx, query, id)
 	return ErrUsers.Wrap(err)
 }
+
+// ListRaffleParticipants returns all raffle participants.
+func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]users.User, error) {
+	query :=
+		`SELECT 
+		u.user_id, 
+		u.first_name, 
+		u.last_name, 
+		u.website, 
+		u.file_name, 
+		d.city, 
+		d.post, 
+		d.post_department
+	FROM users u
+	LEFT JOIN delivery_addresses d ON u.user_id = d.user_id
+	WHERE u.user_id IN (
+		SELECT don.user_id
+		FROM donations don
+		WHERE don.fundraise_id IN (
+			SELECT r.fundraise_id 
+			FROM raffles r
+			WHERE r.raffle_id = $1
+		) AND don.created_at < (
+			SELECT r.end_date
+			FROM raffles r
+			WHERE r.raffle_id = $1
+		) AND don.created_at > (
+		 	SELECT r.start_date
+			FROM raffles r
+			WHERE r.raffle_id = $1
+		)
+		GROUP BY don.user_id
+		HAVING SUM(don.amount) >= (
+			SELECT r.minimum_donation
+			FROM raffles r
+			WHERE r.raffle_id = $1
+		)
+	);`
+
+	rows, err := db.conn.QueryContext(ctx, query, raffleID)
+
+	if err != nil {
+		return nil, ErrUsers.Wrap(err)
+	}
+	defer rows.Close()
+
+	var list []users.User
+
+	for rows.Next() {
+		var user users.User
+		var city, post, postDepartment sql.NullString
+
+		err := rows.Scan(
+			&user.ID,
+			&user.FirstName,
+			&user.LastName,
+			&user.Website,
+			&user.ImageUrl,
+			&city,
+			&post,
+			&postDepartment,
+		)
+		if err != nil {
+			return nil, ErrUsers.Wrap(err)
+		}
+
+		user.City = city.String
+		user.Post = post.String
+		user.PostDepartment = postDepartment.String
+
+		list = append(list, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, ErrUsers.Wrap(err)
+	}
+
+	return list, nil
+
+}
