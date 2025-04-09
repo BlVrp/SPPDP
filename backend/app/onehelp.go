@@ -3,6 +3,9 @@ package app
 import (
 	"one-help/app/donations"
 	"one-help/app/events"
+	eventformats "one-help/app/events/formats"
+	eventparticipants "one-help/app/events/participants"
+	eventstatuses "one-help/app/events/statuses"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/payments"
@@ -37,6 +40,15 @@ type DB interface {
 
 	// Events provides access to events DB.
 	Events() events.DB
+
+	// EventStatuses provides access to event statuses DB.
+	EventStatuses() eventstatuses.DB
+
+	// EventFormats provides access to event formats DB.
+	EventFormats() eventformats.DB
+
+	// EventParticipants provides access to event participants DB.
+	EventParticipants() eventparticipants.DB
 
 	// Donations provides access to donations DB.
 	Donations() donations.DB

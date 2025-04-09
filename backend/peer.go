@@ -18,6 +18,8 @@ import (
 	"one-help/app/users"
 	"one-help/app/users/credentials"
 	"one-help/internal/logger"
+
+	eventparticipants "one-help/app/events/participants"
 )
 
 // Config is the global configuration for one-help app.
@@ -59,6 +61,15 @@ type Peer struct {
 	Events struct {
 		DB      events.DB
 		Service *events.Service
+	}
+
+	EventParticipants struct {
+		DB      eventparticipants.DB
+		Service *eventparticipants.Service
+	}
+
+	Donations struct {
+		DB donations.DB
 	}
 
 	Raffles struct {
@@ -106,8 +117,11 @@ func New(ctx context.Context, logger logger.Logger, config Config, db app.DB) (p
 
 	// events setup
 	{
+		peer.EventParticipants.DB = db.EventParticipants()
+		peer.Donations.DB = db.Donations()
+
 		peer.Events.DB = db.Events()
-		peer.Events.Service = events.NewService(peer.Log, peer.Events.DB)
+		peer.Events.Service = events.NewService(peer.Log, peer.Events.DB, peer.EventParticipants.DB, peer.Donations.DB)
 	}
 
 	// raffles setup

@@ -216,3 +216,44 @@ func (controller *Events) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// Enroll is an endpoint for enrolling a certain user for event.
+// @Summary	Creates Event participants entry
+// @Tags	Events
+// @Produce	json
+// @Param	Authorization	header	string	false	"Bearer token to authorize access"
+// @Success	200		{object}	EventParticipantView
+// @Failure 400,401,404,500	{object}	common.ErrResponseCode
+// @Router	/events/{id}/	[post].
+func (controller *Events) Enroll(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	eventID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		common.NewErrResponse(http.StatusBadRequest, errs.New("failed to parse id")).Serve(controller.log, ErrEvents, w)
+		return
+	}
+
+	creds, err := credentials.GetFromContext(ctx)
+	if err != nil {
+		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrEvents, w)
+		return
+	}
+
+	participant, err := controller.events.Enroll(ctx, eventID, creds.UserID)
+	if err != nil {
+		controller.log.Error("failed to enroll user for event", ErrEvents.Wrap(err))
+		if events.ParamsError.Has(err) {
+			common.NewErrResponse(http.StatusBadRequest, errors.Unwrap(err)).Serve(controller.log, ErrEvents, w)
+			return
+		}
+
+		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to enroll user for event")).Serve(controller.log, ErrEvents, w)
+		return
+	}
+	if err = json.NewEncoder(w).Encode(ToEventParticipantView(participant)); err != nil {
+		controller.log.Error("error while encoding response", ErrEvents.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, err).Serve(controller.log, ErrEvents, w)
+		return
+	}
+}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 
 	"one-help/app/donations"
 
@@ -72,10 +74,27 @@ func (db *donationsDB) Get(ctx context.Context, id uuid.UUID) (donations.Donatio
 }
 
 // List returns all the donations.
-func (db *donationsDB) List(ctx context.Context) ([]donations.Donation, error) {
+func (db *donationsDB) List(ctx context.Context, params donations.ListParams) ([]donations.Donation, error) {
+	var args = make([]any, 0, 2)
+
+	var conditions []string
+
 	query := `SELECT donation_id, user_id, fundraise_id, amount, created_at
               FROM donations`
-	rows, err := db.conn.QueryContext(ctx, query)
+	if params.UserID != nil {
+		args = append(args, *params.UserID)
+		conditions = append(conditions, fmt.Sprintf("user_id = $%d", len(args)))
+	}
+
+	if params.FundraiseID != nil {
+		args = append(args, params.FundraiseID)
+		conditions = append(conditions, fmt.Sprintf("fundraise_id = $%d", len(args)))
+	}
+
+	if len(conditions) > 0 {
+		query += " WHERE " + strings.Join(conditions, " AND ")
+	}
+	rows, err := db.conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, ErrDonations.Wrap(err)
 	}

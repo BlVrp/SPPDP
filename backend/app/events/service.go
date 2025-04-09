@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"one-help/app/donations"
 	"time"
 
 	"one-help/app/events/statuses"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/zeebo/errs"
+
+	eventparticipants "one-help/app/events/participants"
 )
 
 var (
@@ -25,13 +28,19 @@ type Service struct {
 	logger logger.Logger
 
 	events DB
+
+	eventParticipants eventparticipants.DB
+
+	donations donations.DB
 }
 
 // NewService is a constructor for events service.
-func NewService(logger logger.Logger, events DB) *Service {
+func NewService(logger logger.Logger, events DB, eventParticipants eventparticipants.DB, donations donations.DB) *Service {
 	return &Service{
-		logger: logger,
-		events: events,
+		logger:            logger,
+		events:            events,
+		eventParticipants: eventParticipants,
+		donations:         donations,
 	}
 }
 
@@ -108,4 +117,59 @@ func (service *Service) List(ctx context.Context, limit, page int, creatorID *uu
 	}
 
 	return list, nil
+}
+
+// Performs necessary checks and enrols user to the event.
+func (service *Service) Enroll(ctx context.Context, eventID, userID uuid.UUID) (*eventparticipants.EventParticipant, error) {
+
+	event, err := service.events.Get(ctx, eventID)
+	if err != nil {
+		return nil, Error.Wrap(err)
+	}
+
+	if event.Status != statuses.ActiveStatus {
+		return nil, ParamsError.New("event is not active")
+	}
+
+	if event.MaxParticipants > 0 {
+		participants, err := service.eventParticipants.List(ctx, eventparticipants.ListParams{
+			EventID: &event.ID,
+			Limit:   0,
+			Page:    0,
+		})
+		if err != nil {
+			return nil, Error.Wrap(err)
+		}
+		if len(participants) >= event.MaxParticipants {
+			return nil, ParamsError.New("event is full")
+		}
+	}
+
+	if event.MinimumDonation > 0 {
+		donations, err := service.donations.List(ctx, donations.ListParams{
+			UserID:      &userID,
+			FundraiseID: &event.FundraiseId})
+
+		if err != nil {
+			return nil, Error.Wrap(err)
+		}
+		var total float64
+		for _, donation := range donations {
+			total += donation.Amount
+		}
+		if total < event.MinimumDonation {
+			return nil, ParamsError.New("donation is less than minimum")
+		}
+	}
+
+	var participant = eventparticipants.EventParticipant{
+		UserID:  userID,
+		EventID: event.ID,
+	}
+	err = service.eventParticipants.Create(ctx, participant)
+	if err != nil {
+		return nil, Error.Wrap(err)
+	}
+
+	return &participant, nil
 }

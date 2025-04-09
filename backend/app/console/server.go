@@ -132,6 +132,7 @@ func NewServer(
 	eventsRouter.HandleFunc("/", eventsController.List).Methods(http.MethodGet, http.MethodOptions)
 	eventsRouter.HandleFunc("/{id}", eventsController.GetByID).Methods(http.MethodGet, http.MethodOptions)
 	eventsRouter.HandleFunc("/", eventsController.Create).Methods(http.MethodPost, http.MethodOptions)
+	eventsRouter.HandleFunc("/{id}/enroll", eventsController.Enroll).Methods(http.MethodPost, http.MethodOptions)
 
 	rafflesRouter := apiRouter.PathPrefix("/raffles").Subrouter()
 	rafflesRouter.Use(server.jsonResponse)

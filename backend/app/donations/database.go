@@ -19,7 +19,7 @@ type DB interface {
 	// Get donation from the database.
 	Get(ctx context.Context, id uuid.UUID) (Donation, error)
 	// List returns all available donations.
-	List(ctx context.Context) ([]Donation, error)
+	List(ctx context.Context, listParams ListParams) ([]Donation, error)
 	// Update updates donation in database by id.
 	Update(ctx context.Context, donation Donation) error
 	// Delete donation from the database.

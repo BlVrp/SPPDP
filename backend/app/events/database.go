@@ -12,7 +12,7 @@ var (
 	ErrNoEvents = errs.New("event does not exist")
 )
 
-// DB exposes access to fundraises db.
+// DB exposes access to events db.
 //
 // architecture: DB
 type DB interface {
