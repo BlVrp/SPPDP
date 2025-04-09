@@ -12,6 +12,7 @@ interface FundraiserCardProps {
     targetAmount: number;
     filledAmount: number;
     imageUrl: string;
+    endDate: string;
   };
 }
 
@@ -29,24 +30,26 @@ export default function FundraiserCard({ fundraiser }: FundraiserCardProps) {
       }}
     >
       <View className="w-full bg-white rounded-lg p-4 mb-4 shadow">
-      <Image
-  source={imageUrl?.length ? { uri: imageUrl } : defaultImage}
-  className="w-full h-32 rounded-lg mb-3 self-center"
-  resizeMode="cover"
-/>
+        <Image
+          source={imageUrl?.length ? { uri: imageUrl } : defaultImage}
+          className="w-full h-32 rounded-lg mb-3 self-center"
+          resizeMode="cover"
+        />
 
         <Text className="text-lg font-semibold text-black">{title}</Text>
         <Text className="text-gray-600 mt-1">{description}</Text>
 
-        <Text className="text-gray-600 mt-2">
-          {filledAmount.toLocaleString()} / {targetAmount.toLocaleString()} грн
-        </Text>
-
-        <ProgressBar
-          progress={progress}
-          color="#2563EB"
-          className="h-2 rounded-xl mt-1"
-        />
+        <View className="mt-2">
+          <ProgressBar
+            progress={progress}
+            color="#2563EB"
+            style={{ height: 10, borderRadius: 8 }}
+          />
+          <Text className="text-gray-600 mt-1 text-sm text-center">
+            {filledAmount.toLocaleString()} / {targetAmount.toLocaleString()}{" "}
+            грн
+          </Text>
+        </View>
 
         <TouchableOpacity className="bg-primary rounded-lg p-2 mt-3 items-center">
           <Text className="text-white font-semibold">Донат 🍩</Text>

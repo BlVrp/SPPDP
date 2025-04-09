@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ProgressBar } from "react-native-paper";
@@ -48,6 +49,37 @@ export default function DetailedFundraiseCard() {
     }
   };
 
+  const handleDonate = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Помилка", "Користувач не авторизований");
+        return;
+      }
+
+      const res = await fetch(`http://localhost:8080/api/v0/fundraises/${id}/donate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Не вдалося ініціювати донат");
+      }
+
+      const { paymentUrl } = await res.json();
+      if (paymentUrl) {
+        Linking.openURL(paymentUrl);
+      } else {
+        throw new Error("Посилання для оплати відсутнє");
+      }
+    } catch (err: any) {
+      Alert.alert("Помилка", err.message);
+    }
+  };
+
   useEffect(() => {
     if (id) fetchFundraise();
   }, [id]);
@@ -77,25 +109,27 @@ export default function DetailedFundraiseCard() {
   return (
     <ScrollView className="flex-1 bg-white p-4">
       <View className="bg-accent p-4 rounded-2xl">
-      <Image
-  source={
-    fundraiser.imageUrl?.trim().length
-      ? { uri: fundraiser.imageUrl.trim() }
-      : defaultImage
-  }
-  className="w-full h-32 rounded-lg mb-3 self-center"
-  resizeMode="cover"
-/>
-
+        <Image
+          source={
+            fundraiser.imageUrl?.trim().length
+              ? { uri: fundraiser.imageUrl.trim() }
+              : defaultImage
+          }
+          className="w-full h-32 rounded-lg mb-3 self-center"
+          resizeMode="cover"
+        />
 
         <Text className="text-xl font-bold text-black text-center mb-2">
           {fundraiser.title}
         </Text>
 
-        <Text className="text-gray-msg mt-2 text-base leading-5 mb-50 text-center">
-  {fundraiser.description}
-</Text>
+        <Text className="text-gray-msg mt-2 text-base leading-5 mb-1 text-center">
+          {fundraiser.description}
+        </Text>
 
+        <Text className="text-gray-msg mt-2 text-sm text-center">
+  Завершення: {new Date(fundraiser.endDate).toLocaleDateString("uk-UA")}
+</Text>
 
         <View className="mt-4">
           <Text className="text-grey-msg text-sm text-center font-medium">
@@ -109,7 +143,10 @@ export default function DetailedFundraiseCard() {
           />
         </View>
 
-        <TouchableOpacity className="bg-primary rounded-lg p-1 mt-5 items-center">
+        <TouchableOpacity
+          className="bg-primary rounded-lg p-1 mt-5 items-center"
+          onPress={handleDonate}
+        >
           <Text className="text-white text-lg font-semibold">Донат 🍩</Text>
         </TouchableOpacity>
       </View>
