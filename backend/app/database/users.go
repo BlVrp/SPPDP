@@ -150,6 +150,10 @@ func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUI
 			SELECT r.end_date
 			FROM raffles r
 			WHERE r.raffle_id = $1
+		) AND don.created_at > (
+		 	SELECT r.start_date
+			FROM raffles r
+			WHERE r.raffle_id = $1
 		)
 		GROUP BY don.user_id
 		HAVING SUM(don.amount) >= (
