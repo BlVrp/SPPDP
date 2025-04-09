@@ -107,6 +107,7 @@ func NewServer(
 	usersRouter.Use(server.withAuthMiddleware)
 	usersRouter.StrictSlash(true)
 	usersRouter.HandleFunc("/", usersController.Get).Methods(http.MethodGet, http.MethodOptions)
+	usersRouter.HandleFunc("/", usersController.Update).Methods(http.MethodPatch, http.MethodOptions)
 	usersRouter.HandleFunc("/change-password", usersController.ChangePassword).Methods(http.MethodPatch, http.MethodOptions)
 	usersRouter.HandleFunc("/{id}", usersController.GetByID).Methods(http.MethodGet, http.MethodOptions)
 	usersRouter.HandleFunc("/raffle-participants/{id}", usersController.GetRaffleParticipants).Methods(http.MethodGet, http.MethodOptions)

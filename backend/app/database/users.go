@@ -104,7 +104,7 @@ func (db *usersDB) Update(ctx context.Context, user users.User) error {
 	if !user.IsDeliveryAddressEmpty() {
 		query = `INSERT INTO delivery_addresses(user_id, city, post, post_department)
                  VALUES ($1, $2, $3, $4)
-                 ON CONFLICT DO UPDATE
+                 ON CONFLICT (user_id) DO UPDATE
                  SET city = $2, post = $3, post_department = $4`
 		_, err = tx.ExecContext(ctx, query, user.ID, user.City, user.Post, user.PostDepartment)
 	} else {
