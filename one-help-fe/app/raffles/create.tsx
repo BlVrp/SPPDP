@@ -27,6 +27,7 @@ export default function CreateRaffle() {
       minimum_donation: "",
       address: "",
       fundraise_id: "",
+      gifts: [{ title: "", description: "", image: "" }],
     },
   });
   

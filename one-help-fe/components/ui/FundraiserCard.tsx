@@ -29,7 +29,7 @@ export default function FundraiserCard({ fundraiser }: FundraiserCardProps) {
         params: { id },
       }}
     >
-      <View className="w-full bg-white rounded-lg p-4 mb-4 shadow">
+      <View className="w-full bg-accent p-4 rounded-lg mb-4">
         <Image
           source={imageUrl?.length ? { uri: imageUrl } : defaultImage}
           className="w-full h-32 rounded-lg mb-3 self-center"
@@ -51,7 +51,7 @@ export default function FundraiserCard({ fundraiser }: FundraiserCardProps) {
           </Text>
         </View>
 
-        <TouchableOpacity className="bg-primary rounded-lg p-2 mt-3 items-center">
+        <TouchableOpacity className="bg-primary rounded-full mt-2 py-3 items-center shadow-md">
           <Text className="text-white font-semibold">Донат 🍩</Text>
         </TouchableOpacity>
       </View>

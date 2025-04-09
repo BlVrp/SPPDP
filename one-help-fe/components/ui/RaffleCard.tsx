@@ -50,7 +50,7 @@ export default function RaffleCard({ raffle }: { raffle: any }) {
           </Text>
 
           <TouchableOpacity
-            className="bg-primary rounded-md p-1 mt-4 items-center"
+            className="bg-primary rounded-full mt-6 py-3 items-center shadow-md"
           >
             <Text className="text-white text-lg font-semibold">
               Взяти участь 🎟️

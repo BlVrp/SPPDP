@@ -28,12 +28,15 @@ export default function DetailedFundraiseCard() {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/api/v0/fundraises/${id}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:8080/api/v0/fundraises/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -57,12 +60,15 @@ export default function DetailedFundraiseCard() {
         return;
       }
 
-      const res = await fetch(`http://localhost:8080/api/v0/fundraises/${id}/donate`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `http://localhost:8080/api/v0/fundraises/${id}/donate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!res.ok) {
         const error = await res.json();
@@ -106,49 +112,65 @@ export default function DetailedFundraiseCard() {
     );
   }
 
+  const progress = Math.min(fundraiser.filledAmount / fundraiser.targetAmount || 0, 1);
+
   return (
-    <ScrollView className="flex-1 bg-white p-4">
-      <View className="bg-accent p-4 rounded-2xl">
+    <ScrollView className="flex-1 bg-[#f4f6fa] px-4 py-6">
+      <View className="bg-white rounded-3xl shadow-md overflow-hidden">
         <Image
           source={
             fundraiser.imageUrl?.trim().length
               ? { uri: fundraiser.imageUrl.trim() }
               : defaultImage
           }
-          className="w-full h-32 rounded-lg mb-3 self-center"
+          className="w-full h-52"
           resizeMode="cover"
         />
 
-        <Text className="text-xl font-bold text-black text-center mb-2">
-          {fundraiser.title}
-        </Text>
-
-        <Text className="text-gray-msg mt-2 text-base leading-5 mb-1 text-center">
-          {fundraiser.description}
-        </Text>
-
-        <Text className="text-gray-msg mt-2 text-sm text-center">
-  Завершення: {new Date(fundraiser.endDate).toLocaleDateString("uk-UA")}
-</Text>
-
-        <View className="mt-4">
-          <Text className="text-grey-msg text-sm text-center font-medium">
-            {fundraiser.filledAmount.toLocaleString()} /{" "}
-            {fundraiser.targetAmount.toLocaleString()}
+        <View className="p-6">
+          {/* Title */}
+          <Text className="text-2xl font-bold text-center text-black mb-2">
+            {fundraiser.title}
           </Text>
-          <ProgressBar
-            progress={fundraiser.filledAmount / fundraiser.targetAmount}
-            color="#2563EB"
-            className="h-3 rounded-md mt-1"
-          />
-        </View>
 
-        <TouchableOpacity
-          className="bg-primary rounded-lg p-1 mt-5 items-center"
-          onPress={handleDonate}
-        >
-          <Text className="text-white text-lg font-semibold">Донат 🍩</Text>
-        </TouchableOpacity>
+          {/* Description */}
+          <Text className="text-gray-700 text-base text-center mb-4">
+            {fundraiser.description}
+          </Text>
+
+          {/* End date */}
+          <Text className="text-sm text-center text-gray-500 mb-2">
+            📅 Завершення:{" "}
+            {new Date(fundraiser.endDate).toLocaleDateString("uk-UA")}
+          </Text>
+
+          {/* Progress
+          <View className="mt-4">
+            <ProgressBar
+              progress={progress}
+              color="#2563EB"
+              style={{
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: "#E5E7EB",
+              }}
+            />
+            <Text className="text-center text-sm text-gray-600 mt-2">
+              {fundraiser.filledAmount.toLocaleString()} /{" "}
+              {fundraiser.targetAmount.toLocaleString()} грн
+            </Text>
+          </View> */}
+
+          {/* Donate button */}
+          <TouchableOpacity
+            onPress={handleDonate}
+            className="bg-primary rounded-full mt-6 py-3 items-center shadow-md"
+          >
+            <Text className="text-white text-lg font-semibold">
+              Донат 🍩
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );

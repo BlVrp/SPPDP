@@ -8,14 +8,12 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-
-const router = useRouter();
 
 export default function RaffleDetail() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const [raffle, setRaffle] = useState<any>(null);
   const [currentGiftIndex, setCurrentGiftIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -82,67 +80,56 @@ export default function RaffleDetail() {
 
   return (
     <ScrollView className="flex-1 bg-white p-4">
-      <View className="bg-accent p-4 rounded-2xl">
+      <View className="bg-accent p-5 rounded-3xl shadow-sm">
+        {/* Gift Navigation */}
+        {raffle.gifts.length > 1 && (
+          <View className="flex-row justify-center items-center space-x-8 mb-2">
+            <TouchableOpacity onPress={prevGift}>
+              <Text className="text-3xl">⬅</Text>
+            </TouchableOpacity>
+            <Text className="text-sm text-gray-500">
+              {currentGiftIndex + 1} / {raffle.gifts.length}
+            </Text>
+            <TouchableOpacity onPress={nextGift}>
+              <Text className="text-3xl">➡</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-      {raffle.gifts.length > 0 && (
-  <View className="relative items-center">
-    {raffle.gifts.length > 1 && (
-      <TouchableOpacity
-        onPress={prevGift}
-        className="absolute left-0 top-1/2 -translate-y-1/2 px-3 py-2"
-      >
-        <Text className="text-2xl">⬅</Text>
-      </TouchableOpacity>
-    )}
+        {/* Gift Image and Title */}
+        {raffle.gifts.length > 0 && (
+          <View className="items-center">
+            <Image
+              source={{ uri: raffle.gifts[currentGiftIndex].imageUrl }}
+              className="w-full h-64 rounded-xl mb-2"
+              resizeMode="cover"
+            />
 
-    <Image
-      source={{ uri: raffle.gifts[currentGiftIndex].imageUrl }}
-      className="w-3/4 h-72 rounded-lg"
-      resizeMode="cover"
-    />
-    <Text className="text-lg text-grey-msg text-center mt-1">
-      {raffle.gifts[currentGiftIndex].title}
-    </Text>
+            <Text className="text-lg font-medium text-gray-700 text-center mb-2">
+              🎁 {raffle.gifts[currentGiftIndex].title}
+            </Text>
+          </View>
+        )}
 
-    {raffle.gifts.length > 1 && (
-      <TouchableOpacity
-        onPress={nextGift}
-        className="absolute right-0 top-1/2 -translate-y-1/2 px-3 py-2"
-      >
-        <Text className="text-2xl">➡</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-)}
-
-
-        <View className="mt-4 flex-row justify-center items-center">
+        {/* Donate Button */}
         <TouchableOpacity
-  className="bg-primary rounded-md px-4 w-2/3 py-2"
-  onPress={() => router.push(`/fundraises/${raffle.fundraiseId}`)}
->
-  <Text className="text-white text-lg font-semibold text-center">
-    Донат від {raffle.minimumDonation} ₴ 💰
-  </Text>
-</TouchableOpacity>
+          className="bg-primary rounded-full py-3 mt-4 items-center"
+          onPress={() => router.push(`/fundraises/${raffle.fundraiseId}`)}
+        >
+          <Text className="text-white text-base font-semibold">
+            Донат від {raffle.minimumDonation} ₴ 💰
+          </Text>
+        </TouchableOpacity>
 
-          {/* <Text className="text-4xl ml-3">☑️</Text> */}
-        </View>
-
-        <Text className="text-2xl font-bold text-black text-center mt-4">
+        {/* Title */}
+        <Text className="text-2xl font-bold text-black text-center mt-6">
           {raffle.title}
         </Text>
 
-        <View className="mb-3 mt-2">
-          <Text className="text-grey-msg text-md text-center">
-            {raffle.description}
-          </Text>
-
-          {/* <Text className="text-grey-msg text-center mt-2">
-            📆 Донати приймаються до{" "}
-            {new Date(raffle.endDate).toLocaleDateString("uk-UA")}
-          </Text> */}
-        </View>
+        {/* Description */}
+        <Text className="text-gray-600 text-base text-center mt-3">
+          {raffle.description}
+        </Text>
       </View>
     </ScrollView>
   );

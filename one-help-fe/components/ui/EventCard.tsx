@@ -42,7 +42,7 @@ export default function EventCard({ event }: { event: any }) {
 
       <TouchableOpacity
         onPress={navigateToEvent}
-        className="bg-primary rounded-lg p-1 mt-3 items-center"
+        className="bg-primary rounded-full mt-6 py-3 items-center shadow-md"
       >
         <Text className="text-white text-lg font-semibold">
           Зареєструватись 📝
