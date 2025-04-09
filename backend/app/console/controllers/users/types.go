@@ -80,3 +80,14 @@ func ToUserPublicView(user *users.User) *UserPublicView {
 		City:      user.City,
 	}
 }
+
+// UpdateRequest defines request values for update endpoint.
+type UpdateRequest struct {
+	FirstName      string `json:"firstName"`
+	LastName       string `json:"lastName"`
+	Website        string `json:"website"`
+	City           string `json:"city"`
+	Post           string `json:"post"`
+	PostDepartment string `json:"postDepartment"`
+	ImageUrl       string `json:"imageUrl"`
+}

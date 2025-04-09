@@ -277,3 +277,65 @@ func (controller *Users) ChangePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
+// Update is an endpoint for updating user data.
+// @Summary	Updates user data
+// @Tags	Users
+// @Accept	json
+// @Produce	json
+// @Param	request	body	UpdateRequest	true	"Update request fields"
+// @Success	200		{object}	UserView
+// @Failure	400,401,500	{object}	common.ErrResponseCode
+// @Router	/users/	[patch].
+func (controller *Users) Update(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var request UpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		controller.log.Error("failed to decode update request", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusBadRequest, err).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	creds, err := credentials.GetFromContext(ctx)
+	if err != nil {
+		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	err = controller.users.Update(ctx, users.User{
+		ID:        creds.UserID,
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		Website:   request.Website,
+		ImageUrl:  request.ImageUrl,
+		DeliveryAddress: users.DeliveryAddress{
+			City:           request.City,
+			Post:           request.Post,
+			PostDepartment: request.PostDepartment,
+		},
+	})
+	if err != nil {
+		controller.log.Error("error while update:", ErrUsers.Wrap(err))
+		if users.ParamsError.Has(err) {
+			common.NewErrResponse(http.StatusBadRequest, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+			return
+		}
+
+		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	user, err := controller.users.Get(ctx, creds.UserID)
+	if err != nil {
+		controller.log.Error("error while getting updated user:", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(ToUserView(user, creds)); err != nil {
+		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+}
