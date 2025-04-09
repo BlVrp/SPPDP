@@ -86,7 +86,7 @@ func TestDonations(t *testing.T) {
 		})
 
 		t.Run("List", func(t *testing.T) {
-			storedDonations, err := donationsRepository.List(ctx)
+			storedDonations, err := donationsRepository.List(ctx, donations.ListParams{})
 			require.NoError(t, err)
 			donationsAreEqual(t, donation, storedDonations[0])
 			assert.Equal(t, 1, len(storedDonations))

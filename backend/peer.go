@@ -96,6 +96,9 @@ func New(ctx context.Context, logger logger.Logger, config Config, db app.DB) (p
 
 	// events setup
 	{
+		peer.EventParticipants.DB = db.EventParticipants()
+		peer.Donations.DB = db.Donations()
+
 		peer.Events.DB = db.Events()
 		peer.Events.Service = events.NewService(peer.Log, peer.Events.DB, peer.EventParticipants.DB, peer.Donations.DB)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/zeebo/errs"
 
@@ -64,14 +65,20 @@ func (db *eventParticipantsDB) List(ctx context.Context, params eventparticipant
 	query := `SELECT event_id, user_id
               FROM event_participants`
 
+	var conditions []string
+
 	if params.UserID != nil {
 		args = append(args, *params.UserID)
-		query += fmt.Sprintf(" WHERE user_id = $%d ", len(args))
+		conditions = append(conditions, fmt.Sprintf("user_id = $%d", len(args)))
 	}
 
 	if params.EventID != nil {
 		args = append(args, *params.EventID)
-		query += fmt.Sprintf(" WHERE event_id = $%d ", len(args))
+		conditions = append(conditions, fmt.Sprintf("event_id = $%d", len(args)))
+	}
+
+	if len(conditions) > 0 {
+		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
 	if pagingEnabled { // INFO: Paging.

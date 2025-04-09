@@ -118,7 +118,7 @@ func (service *Service) List(ctx context.Context, limit, page int, creatorID *uu
 }
 
 // Performs necessary checks and enrols user to the event.
-func (service *Service) Enroll(ctx context.Context, userID, eventID uuid.UUID) (*eventparticipants.EventParticipant, error) {
+func (service *Service) Enroll(ctx context.Context, eventID, userID uuid.UUID) (*eventparticipants.EventParticipant, error) {
 
 	event, err := service.events.Get(ctx, eventID)
 	if err != nil {
