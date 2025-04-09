@@ -63,7 +63,7 @@ func (controller *Events) Create(w http.ResponseWriter, r *http.Request) {
 	// INFO: Caller creds.
 	creds, err := credentials.GetFromContext(ctx)
 	if err != nil {
-		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrEvents, w)
+		common.NewErrResponse(http.StatusUnauthorized, err).Serve(controller.log, ErrEvents, w)
 		return
 	}
 
@@ -94,6 +94,7 @@ func (controller *Events) Create(w http.ResponseWriter, r *http.Request) {
 		MinimumDonation: request.MinimumDonation,
 		Address:         request.Address,
 		FundraiseId:     request.FundraiseId,
+		ImageUrl:        request.ImageUrl,
 	}
 
 	event, err := controller.events.Create(ctx, createParams)
@@ -187,7 +188,7 @@ func (controller *Events) List(w http.ResponseWriter, r *http.Request) {
 // @Param	Authorization	header	string	false	"Bearer token to authorize access"
 // @Success	200		{object}	EventView
 // @Failure 400,401,404,500	{object}	common.ErrResponseCode
-// @Router	/events/{id}/	[get].
+// @Router	/events/{id}	[get].
 func (controller *Events) GetByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

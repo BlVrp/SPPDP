@@ -20,6 +20,7 @@ type Event struct {
 	Status          string
 	FundraiseId     uuid.UUID
 	CreatedAt       time.Time
+	ImageUrl        string
 }
 
 // CreateParams defines needed params to create a new event.
@@ -33,4 +34,5 @@ type CreateParams struct {
 	MinimumDonation float64
 	Address         string
 	FundraiseId     uuid.UUID
+	ImageUrl        string
 }

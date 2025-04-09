@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/login/": {
+        "/auth/login": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -72,7 +72,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register/": {
+        "/auth/register": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -224,7 +224,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/events/{id}/": {
+        "/events/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -431,7 +431,41 @@ const docTemplate = `{
                 }
             }
         },
-        "/fundraises/my/": {
+        "/fundraises/donations/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Donations"
+                ],
+                "summary": "Finishes payment process (for internal use).",
+                "responses": {
+                    "301": {
+                        "description": "Moved Permanently"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrResponseCode"
+                        }
+                    }
+                }
+            }
+        },
+        "/fundraises/my": {
             "get": {
                 "produces": [
                     "application/json"
@@ -494,7 +528,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/fundraises/{id}/": {
+        "/fundraises/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -545,18 +579,15 @@ const docTemplate = `{
                 }
             }
         },
-        "/fundraises/{id}/donate/": {
+        "/fundraises/{id}/donate": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Fundraises"
                 ],
-                "summary": "Creates new donate to fundraise.",
+                "summary": "Creates new payment url to donate to fundraise.",
                 "parameters": [
                     {
                         "type": "string",
@@ -564,20 +595,14 @@ const docTemplate = `{
                         "name": "Authorization",
                         "in": "header",
                         "required": true
-                    },
-                    {
-                        "description": "Donate data fields",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/fundraises.DonateRequest"
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fundraises.DonateResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -659,6 +684,12 @@ const docTemplate = `{
                         "description": "Number of the page (1...) [default value: 1]",
                         "name": "page",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional filtration by fundraise ID (UUID)",
+                        "name": "fundraiseId",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -738,7 +769,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/raffles/{id}/": {
+        "/raffles/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -829,7 +860,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/change-password/": {
+        "/users/change-password": {
             "patch": {
                 "consumes": [
                     "application/json"
@@ -878,7 +909,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{id}/": {
+        "/users/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -1008,6 +1039,9 @@ const docTemplate = `{
                 "fundraiseId": {
                     "type": "string"
                 },
+                "imageUrl": {
+                    "type": "string"
+                },
                 "maxParticipants": {
                     "type": "integer"
                 },
@@ -1057,6 +1091,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "imageUrl": {
+                    "type": "string"
+                },
                 "maxParticipants": {
                     "type": "integer"
                 },
@@ -1083,7 +1120,7 @@ const docTemplate = `{
                 "endDate": {
                     "type": "string"
                 },
-                "organizerId": {
+                "imageUrl": {
                     "type": "string"
                 },
                 "targetAmount": {
@@ -1094,8 +1131,13 @@ const docTemplate = `{
                 }
             }
         },
-        "fundraises.DonateRequest": {
-            "type": "object"
+        "fundraises.DonateResponse": {
+            "type": "object",
+            "properties": {
+                "paymentUrl": {
+                    "type": "string"
+                }
+            }
         },
         "fundraises.FundraiseView": {
             "type": "object",
@@ -1110,6 +1152,9 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "imageUrl": {
                     "type": "string"
                 },
                 "organizerId": {
@@ -1143,7 +1188,7 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "imageLink": {
+                "imageUrl": {
                     "type": "string"
                 },
                 "title": {
@@ -1189,16 +1234,16 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "imageLink": {
+                "imageUrl": {
                     "type": "string"
                 },
-                "raffleID": {
+                "raffleId": {
                     "type": "string"
                 },
                 "title": {
                     "type": "string"
                 },
-                "userID": {
+                "userId": {
                     "type": "string"
                 }
             }
@@ -1212,7 +1257,7 @@ const docTemplate = `{
                 "endDate": {
                     "type": "string"
                 },
-                "fundraiseID": {
+                "fundraiseId": {
                     "type": "string"
                 },
                 "gifts": {
@@ -1270,6 +1315,9 @@ const docTemplate = `{
                 "firstName": {
                     "type": "string"
                 },
+                "imageUrl": {
+                    "type": "string"
+                },
                 "lastName": {
                     "type": "string"
                 },
@@ -1307,13 +1355,13 @@ const docTemplate = `{
                 "city": {
                     "type": "string"
                 },
-                "fileName": {
-                    "type": "string"
-                },
                 "firstName": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "imageUrl": {
                     "type": "string"
                 },
                 "lastName": {
@@ -1333,13 +1381,13 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "fileName": {
-                    "type": "string"
-                },
                 "firstName": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "imageUrl": {
                     "type": "string"
                 },
                 "lastName": {

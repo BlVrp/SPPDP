@@ -7,7 +7,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/zeebo/errs"
 
+	"one-help/app/donations"
 	"one-help/app/fundraises/statuses"
+	"one-help/app/payments"
+	"one-help/app/stripe"
 	"one-help/internal/logger"
 )
 
@@ -25,13 +28,20 @@ type Service struct {
 	logger logger.Logger
 
 	fundraises DB
+	donations  donations.DB
+	payments   payments.DB
+
+	charger *stripe.Charger
 }
 
 // NewService is a constructor for fundraises service.
-func NewService(logger logger.Logger, fundraises DB) *Service {
+func NewService(logger logger.Logger, fundraises DB, donations donations.DB, payments payments.DB, charger *stripe.Charger) *Service {
 	return &Service{
 		logger:     logger,
 		fundraises: fundraises,
+		donations:  donations,
+		payments:   payments,
+		charger:    charger,
 	}
 }
 
@@ -55,6 +65,7 @@ func (service *Service) Create(ctx context.Context, params CreateParams) (*Fundr
 		StartDate:    time.Now().UTC(),
 		EndDate:      params.EndDate,
 		Status:       statuses.ActiveStatus,
+		ImageUrl:     params.ImageUrl,
 	}
 
 	err := service.fundraises.Create(ctx, *fundraise)
@@ -98,6 +109,85 @@ func (service *Service) List(ctx context.Context, limit, page int, creatorID *uu
 
 // Filled returns funded amount on fundraise by id.
 func (service *Service) Filled(ctx context.Context, id uuid.UUID) (float64, error) {
-	// TODO: Implement.
-	return 0, nil
+	filled, err := service.fundraises.GetFilled(ctx, id)
+	if err != nil {
+		return 0, Error.Wrap(err)
+	}
+
+	return filled, nil
+}
+
+// RegisterDonate register new donate values, provides payment url.
+func (service *Service) RegisterDonate(ctx context.Context, params RegisterDonateParams) (result RegisterDonateResult, err error) {
+	donation := donations.Donation{
+		ID:          uuid.New(),
+		UserId:      params.UserID,
+		FundraiseId: params.FundraiseID,
+		Amount:      0,
+		CreatedAt:   time.Now().UTC(),
+	}
+	err = service.donations.Create(ctx, donation)
+	if err != nil {
+		return result, Error.Wrap(err)
+	}
+
+	var paymentID string
+	result.PaymentURL, paymentID, err = service.charger.SetupChargeSessionURL("/fundraises/donations/" + donation.ID.String())
+	if err != nil {
+		return result, Error.Wrap(err)
+	}
+
+	err = service.payments.Create(ctx, payments.Payment{
+		DonationId:    donation.ID,
+		PaymentType:   payments.TypeStripe,
+		TransactionId: paymentID,
+		Confirmed:     false,
+	})
+	if err != nil {
+		return result, Error.Wrap(err)
+	}
+
+	return result, nil
+}
+
+// ConfirmDonation finishes donation processes.
+func (service *Service) ConfirmDonation(ctx context.Context, donationID uuid.UUID) error {
+	donation, err := service.donations.Get(ctx, donationID)
+	if err != nil {
+		return Error.Wrap(err)
+	}
+
+	payment, err := service.payments.Get(ctx, donation.ID)
+	if err != nil {
+		return Error.Wrap(err)
+	}
+
+	paid, funded, err := service.charger.GetSessionPaymentData(payment.TransactionId)
+	if err != nil {
+		return Error.Wrap(err)
+	}
+
+	if !paid {
+		service.logger.WarnF("receiver unpaid session: %s, for donation: %s in ConfirmDonation", payment.TransactionId, donationID.String())
+	}
+
+	donation.Amount = funded
+	payment.Confirmed = true
+
+	err = service.donations.Update(ctx, donation)
+	if err != nil {
+		return Error.Wrap(err)
+	}
+
+	err = service.payments.Update(ctx, payment)
+	if err != nil {
+		return Error.Wrap(err)
+	}
+
+	return nil
+}
+
+// CancelDonation removes canceled donation data.
+func (service *Service) CancelDonation(ctx context.Context, donationID uuid.UUID) error {
+	return Error.Wrap(service.donations.Delete(ctx, donationID))
 }

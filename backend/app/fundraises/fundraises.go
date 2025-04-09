@@ -16,6 +16,7 @@ type Fundraise struct {
 	StartDate    time.Time
 	EndDate      time.Time
 	Status       string
+	ImageUrl     string
 }
 
 // IsEndDateSet returns true if end date is not null.
@@ -30,4 +31,16 @@ type CreateParams struct {
 	Description  string
 	TargetAmount float64
 	EndDate      time.Time
+	ImageUrl     string
+}
+
+// RegisterDonateParams defines values needed to register new donate.
+type RegisterDonateParams struct {
+	FundraiseID uuid.UUID
+	UserID      uuid.UUID
+}
+
+// RegisterDonateResult defines donate register result values.
+type RegisterDonateResult struct {
+	PaymentURL string
 }

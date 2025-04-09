@@ -26,13 +26,16 @@ type Fundraises struct {
 	log logger.Logger
 
 	fundraises *fundraises.Service
+
+	frontEndRedirectUrl string
 }
 
 // NewFundraises is a constructor for fundraises controller.
-func NewFundraises(log logger.Logger, fundraises *fundraises.Service) *Fundraises {
+func NewFundraises(log logger.Logger, fundraises *fundraises.Service, frontEndRedirectUrl string) *Fundraises {
 	fundraisesController := &Fundraises{
-		log:        log,
-		fundraises: fundraises,
+		log:                 log,
+		fundraises:          fundraises,
+		frontEndRedirectUrl: frontEndRedirectUrl,
 	}
 
 	return fundraisesController
@@ -60,7 +63,7 @@ func (controller *Fundraises) Create(w http.ResponseWriter, r *http.Request) {
 	// INFO: Caller creds.
 	creds, err := credentials.GetFromContext(ctx)
 	if err != nil {
-		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrFundraises, w)
+		common.NewErrResponse(http.StatusUnauthorized, err).Serve(controller.log, ErrFundraises, w)
 		return
 	}
 
@@ -70,6 +73,7 @@ func (controller *Fundraises) Create(w http.ResponseWriter, r *http.Request) {
 		Description:  request.Description,
 		TargetAmount: request.TargetAmount,
 		EndDate:      request.EndDate,
+		ImageUrl:     request.ImageUrl,
 	}
 
 	fundraise, err := controller.fundraises.Create(ctx, createParams)
@@ -143,6 +147,7 @@ func (controller *Fundraises) List(w http.ResponseWriter, r *http.Request) {
 	for i, fundraise := range list {
 		filled, err = controller.fundraises.Filled(ctx, fundraise.ID)
 		if err != nil {
+			controller.log.Error("failed to list fundraises", ErrFundraises.Wrap(err))
 			common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to list fundraises")).Serve(controller.log, ErrFundraises, w)
 			return
 		}
@@ -170,7 +175,7 @@ func (controller *Fundraises) List(w http.ResponseWriter, r *http.Request) {
 // @Param	Authorization	header	string	false	"Bearer token to authorize access"
 // @Success	200		{object}	FundraiseView
 // @Failure 400,401,404,500	{object}	common.ErrResponseCode
-// @Router	/fundraises/{id}/	[get].
+// @Router	/fundraises/{id}	[get].
 func (controller *Fundraises) GetByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -194,6 +199,7 @@ func (controller *Fundraises) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	filled, err := controller.fundraises.Filled(ctx, fundraise.ID)
 	if err != nil {
+		controller.log.Error("failed to get fundraise filled value", ErrFundraises.Wrap(err))
 		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to get fundraise filled value")).Serve(controller.log, ErrFundraises, w)
 		return
 	}
@@ -214,14 +220,14 @@ func (controller *Fundraises) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param	page			query	integer	false	"Number of the page (1...) [default value: 1]"
 // @Success	200		{object}	common.Page[FundraiseView]
 // @Failure 400,401,404,500	{object}	common.ErrResponseCode
-// @Router	/fundraises/my/	[get].
+// @Router	/fundraises/my	[get].
 func (controller *Fundraises) ListMy(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// INFO: Caller creds.
 	creds, err := credentials.GetFromContext(ctx)
 	if err != nil {
-		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrFundraises, w)
+		common.NewErrResponse(http.StatusUnauthorized, err).Serve(controller.log, ErrFundraises, w)
 		return
 	}
 
@@ -263,6 +269,7 @@ func (controller *Fundraises) ListMy(w http.ResponseWriter, r *http.Request) {
 	for i, fundraise := range list {
 		filled, err = controller.fundraises.Filled(ctx, fundraise.ID)
 		if err != nil {
+			controller.log.Error("failed to list creator fundraises", ErrFundraises.Wrap(err))
 			common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to list creator fundraises")).Serve(controller.log, ErrFundraises, w)
 			return
 		}
@@ -283,16 +290,94 @@ func (controller *Fundraises) ListMy(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Donate is an endpoint creating new donate to fundraise.
-// @Summary	Creates new donate to fundraise.
+// Donate is an endpoint creating new payment url to donate to fundraise.
+// @Summary	Creates new payment url to donate to fundraise.
 // @Tags	Fundraises
 // @Produce	json
-// @Accept	json
 // @Param	Authorization	header	string	true	"Bearer token to authorize access"
-// @Param	request	body	DonateRequest	true	"Donate data fields"
-// @Success	200
+// @Success	200	{object}	DonateResponse
 // @Failure	400,401,404,500	{object}	common.ErrResponseCode
-// @Router	/fundraises/{id}/donate/	[post].
+// @Router	/fundraises/{id}/donate	[post].
 func (controller *Fundraises) Donate(w http.ResponseWriter, r *http.Request) {
-	common.NewErrResponse(http.StatusNotImplemented, errors.New("not implemented")).Serve(controller.log, ErrFundraises, w)
+	ctx := r.Context()
+
+	// INFO: Caller creds.
+	creds, err := credentials.GetFromContext(ctx)
+	if err != nil {
+		common.NewErrResponse(http.StatusUnauthorized, err).Serve(controller.log, ErrFundraises, w)
+		return
+	}
+
+	fundsraiseID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		common.NewErrResponse(http.StatusBadRequest, errs.New("failed to parse id")).Serve(controller.log, ErrFundraises, w)
+		return
+	}
+
+	fundraise, err := controller.fundraises.Get(ctx, fundsraiseID)
+	if err != nil {
+		controller.log.Error("failed to get fundraise by id", ErrFundraises.Wrap(err))
+		if errors.Is(err, fundraises.ErrNoFundraise) {
+			common.NewErrResponse(http.StatusNotFound, fundraises.ErrNoFundraise).Serve(controller.log, ErrFundraises, w)
+			return
+		}
+
+		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to get fundraise by id")).Serve(controller.log, ErrFundraises, w)
+		return
+	}
+
+	result, err := controller.fundraises.RegisterDonate(ctx, fundraises.RegisterDonateParams{
+		FundraiseID: fundraise.ID,
+		UserID:      creds.UserID,
+	})
+	if err != nil {
+		controller.log.Error("failed to register payment", ErrFundraises.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to register payment")).Serve(controller.log, ErrFundraises, w)
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(&DonateResponse{PaymentURL: result.PaymentURL}); err != nil {
+		controller.log.Error("error while encoding response", ErrFundraises.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, err).Serve(controller.log, ErrFundraises, w)
+		return
+	}
+}
+
+// FinishDonation is an endpoint payment callback.
+// @Summary	Finishes payment process (for internal use).
+// @Tags	Donations
+// @Produce	json
+// @Success	301
+// @Failure	400,404,500	{object}	common.ErrResponseCode
+// @Router	/fundraises/donations/{id}	[get].
+func (controller *Fundraises) FinishDonation(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	donationID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		common.NewErrResponse(http.StatusBadRequest, errs.New("failed to parse donation id")).Serve(controller.log, ErrFundraises, w)
+		return
+	}
+
+	switch {
+	case r.URL.Query().Get("success") == "true":
+		if err = controller.fundraises.ConfirmDonation(ctx, donationID); err != nil {
+			controller.log.Error("failed to confirm donation", ErrFundraises.Wrap(err))
+			common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to confirm donation")).Serve(controller.log, ErrFundraises, w)
+			return
+		}
+
+		http.Redirect(w, r, controller.frontEndRedirectUrl+"?success=true", http.StatusMovedPermanently)
+	case r.URL.Query().Get("canceled") == "true":
+		if err = controller.fundraises.CancelDonation(ctx, donationID); err != nil {
+			controller.log.Error("failed to cancel donation", ErrFundraises.Wrap(err))
+			common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to cancel donation")).Serve(controller.log, ErrFundraises, w)
+			return
+		}
+
+		http.Redirect(w, r, controller.frontEndRedirectUrl+"?canceled=true", http.StatusMovedPermanently)
+	default:
+		controller.log.Warn("invalid callback url format received")
+		common.NewErrResponse(http.StatusBadRequest, errors.New("failed to cancel donation")).Serve(controller.log, ErrFundraises, w)
+	}
 }

@@ -38,7 +38,8 @@ var (
 
 // Config contains configuration for console web server.
 type Config struct {
-	Address string `env:"ADDRESS"`
+	Address                    string `env:"ADDRESS"`
+	FrontEndPaymentRedirectUrl string `env:"FRONT_END_PAYMENT_REDIRECT_URL"`
 }
 
 // Server represents console web server.
@@ -83,9 +84,9 @@ func NewServer(
 
 	infoController := infocontroller.NewInfo(log)
 	usersController := userscontroller.NewUsers(log, users)
-	fundraisesController := fundraisescontroller.NewFundraises(log, fundraises)
+	fundraisesController := fundraisescontroller.NewFundraises(log, fundraises, config.FrontEndPaymentRedirectUrl)
 	eventsController := eventscontroller.NewEvents(log, events, fundraises)
-	rafflesController := rafflescontroller.NewRaffles(log, raffles)
+	rafflesController := rafflescontroller.NewRaffles(log, raffles, fundraises)
 
 	router := mux.NewRouter()
 	apiRouter := router.PathPrefix("/api/v0").Subrouter()
@@ -118,6 +119,11 @@ func NewServer(
 	fundraisesRouter.HandleFunc("/{id}", fundraisesController.GetByID).Methods(http.MethodGet, http.MethodOptions)
 	fundraisesRouter.HandleFunc("/", fundraisesController.Create).Methods(http.MethodPost, http.MethodOptions)
 	fundraisesRouter.HandleFunc("/{id}/donate", fundraisesController.Donate).Methods(http.MethodPost, http.MethodOptions)
+
+	donationsRouter := apiRouter.PathPrefix("/fundraises/donations").Subrouter()
+	donationsRouter.Use(server.jsonResponse)
+	donationsRouter.StrictSlash(true)
+	donationsRouter.HandleFunc("/{id}", fundraisesController.FinishDonation).Methods(http.MethodGet, http.MethodOptions)
 
 	eventsRouter := apiRouter.PathPrefix("/events").Subrouter()
 	eventsRouter.Use(server.jsonResponse)
@@ -216,5 +222,5 @@ func (server *Server) withAuth(handler http.Handler, optionalAuth bool) http.Han
 }
 
 func (server *Server) withAuthMiddleware(handler http.Handler) http.Handler {
-	return server.withAuth(handler, true)
+	return server.withAuth(handler, false)
 }

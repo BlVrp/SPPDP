@@ -67,7 +67,7 @@ func (db *rafflesDB) Create(ctx context.Context, raffle raffles.Raffle, gifts []
 			return ErrRaffles.Wrap(err)
 		}
 
-		_, err = giftImageStmt.ExecContext(ctx, gift.ID, gift.ImageLink)
+		_, err = giftImageStmt.ExecContext(ctx, gift.ID, gift.ImageUrl)
 		if err != nil {
 			return ErrRaffles.Wrap(err)
 		}
@@ -182,7 +182,7 @@ func (db *rafflesDB) ListGifts(ctx context.Context, raffleID uuid.UUID) ([]raffl
 			&gift.Description,
 			&gift.RaffleID,
 			&gift.UserID,
-			&gift.ImageLink,
+			&gift.ImageUrl,
 		)
 		if err != nil {
 			return nil, ErrRaffles.Wrap(err)
