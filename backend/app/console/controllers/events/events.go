@@ -182,7 +182,7 @@ func (controller *Events) List(w http.ResponseWriter, r *http.Request) {
 
 // GetByID is an endpoint for getting event by id.
 // @Summary	Provides event by id
-// @Tags	Event
+// @Tags	Events
 // @Produce	json
 // @Param	Authorization	header	string	false	"Bearer token to authorize access"
 // @Success	200		{object}	EventView
@@ -218,7 +218,7 @@ func (controller *Events) GetByID(w http.ResponseWriter, r *http.Request) {
 
 // Enroll is an endpoint for enrolling a certain user for event.
 // @Summary	Creates Event participants entry
-// @Tags	Event
+// @Tags	Events
 // @Produce	json
 // @Param	Authorization	header	string	false	"Bearer token to authorize access"
 // @Success	200		{object}	EventParticipantView
