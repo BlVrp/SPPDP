@@ -109,6 +109,7 @@ func NewServer(
 	usersRouter.HandleFunc("/", usersController.Get).Methods(http.MethodGet, http.MethodOptions)
 	usersRouter.HandleFunc("/change-password", usersController.ChangePassword).Methods(http.MethodPatch, http.MethodOptions)
 	usersRouter.HandleFunc("/{id}", usersController.GetByID).Methods(http.MethodGet, http.MethodOptions)
+	usersRouter.HandleFunc("/raffle-participants/{id}", usersController.GetRaffleParticipants).Methods(http.MethodGet, http.MethodOptions)
 
 	fundraisesRouter := apiRouter.PathPrefix("/fundraises").Subrouter()
 	fundraisesRouter.Use(server.jsonResponse)

@@ -277,3 +277,45 @@ func (controller *Users) ChangePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
+// GetRaffleParticipants is an endpoint for getting raffle participants by raffle id.
+// @Summary	Provides raffle participants by raffle id
+// @Tags	Users
+// @Produce	json
+// @Param	Authorization	header	string	false	"Bearer token to authorize access"
+// @Success	200		{object}	[]UserPublicView
+// @Failure 400,401,404,500	{object}	common.ErrResponseCode
+// @Router	/users/raffle-participants/{id}	[get].
+func (controller *Users) GetRaffleParticipants(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	raffleID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		common.NewErrResponse(http.StatusBadRequest, errs.New("failed to parse raffle id")).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	userList, err := controller.users.ListRaffleParticipants(ctx, raffleID)
+	if err != nil {
+		controller.log.Error("failed to get raffle participants", ErrUsers.Wrap(err))
+		if errors.Is(err, users.ErrNoUser) {
+			common.NewErrResponse(http.StatusNotFound, users.ErrNoUser).Serve(controller.log, ErrUsers, w)
+			return
+		}
+
+		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to get raffle participants")).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	var viewList = make([]UserPublicView, len(userList))
+
+	for i, user := range userList {
+		viewList[i] = *ToUserPublicView(&user)
+	}
+
+	if err = json.NewEncoder(w).Encode(viewList); err != nil {
+		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, err).Serve(controller.log, ErrUsers, w)
+		return
+	}
+}

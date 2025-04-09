@@ -26,4 +26,6 @@ type DB interface {
 	Update(ctx context.Context, user User) error
 	// Delete user from the database.
 	Delete(ctx context.Context, id uuid.UUID) error
+	// ListParticipants returns all raffle participants.
+	ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]User, error)
 }
