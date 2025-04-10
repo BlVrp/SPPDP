@@ -171,7 +171,7 @@ func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUI
 	if err != nil {
 		return nil, ErrUsers.Wrap(err)
 	}
-	defer rows.Close()
+	defer func() { err = errs.Combine(err, rows.Close()) }()
 
 	var list []users.UserWithContacts
 

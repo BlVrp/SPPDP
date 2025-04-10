@@ -23,6 +23,7 @@ type CreateRequest struct {
 	Address         string    `json:"address"`
 	FundraiseId     uuid.UUID `json:"fundraiseId"`
 	ImageUrl        string    `json:"imageUrl"`
+	FormUrl         string    `json:"formUrl"`
 }
 
 // EventView defines event view type.
@@ -40,6 +41,7 @@ type EventView struct {
 	FundraiseId     uuid.UUID `json:"fundraiseId"`
 	CreatedAt       time.Time `json:"createdAt"`
 	ImageUrl        string    `json:"imageUrl"`
+	FormUrl         string    `json:"formUrl"`
 }
 
 // EventViewExtended defines event view type with additional data.
@@ -64,6 +66,7 @@ func ToEventView(e *events.Event) EventView {
 		FundraiseId:     e.FundraiseId,
 		CreatedAt:       e.CreatedAt,
 		ImageUrl:        e.ImageUrl,
+		FormUrl:         e.FormUrl,
 	}
 }
 

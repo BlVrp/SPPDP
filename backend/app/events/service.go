@@ -2,8 +2,9 @@ package events
 
 import (
 	"context"
-	"one-help/app/donations"
 	"time"
+
+	"one-help/app/donations"
 
 	"one-help/app/events/statuses"
 	"one-help/internal/logger"
@@ -79,6 +80,7 @@ func (service *Service) Create(ctx context.Context, params CreateParams) (*Event
 		FundraiseId:     params.FundraiseId,
 		CreatedAt:       time.Now().UTC(),
 		ImageUrl:        params.ImageUrl,
+		FormUrl:         params.FormUrl,
 	}
 
 	err := service.events.Create(ctx, *event)
