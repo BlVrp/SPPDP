@@ -1,39 +1,110 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Linking,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ProgressBar } from "react-native-paper";
-
-const TEMP_FUNDRAISERS = [
-  {
-    id: "1",
-    title: "Збір на 2 ecoflow delta max",
-    description: `Наші прикордонники потребують допомоги в забезпеченні та підготовці до бойового виїзду. Їм необхідно:
-    • Комплект гуми – 25 500 грн
-    • 2 автономні дизельні обігрівачі – 12 700 грн
-    • EcoFlow Delta Max 1600 – 38 000 грн
-
-    Хлопці щодня роблять усе можливе, щоб ми могли спокійно спати в теплих ліжках. Не залишаймося байдужими, коли вони потребують нашої підтримки!`,
-    image:
-      "https://www.peoplesproject.com/wp-content/uploads/2023/09/11113.jpg",
-    goal: 71000,
-    raised: 55000,
-  },
-  {
-    id: "2",
-    title: "Збір на авто",
-    description: "25 бригада, Покровського напрямку",
-    image:
-      "https://ptv.ua/mediafiles/gallery/d5d26a74-41b8-4985-bccb-492ffa84f7b5.jfif",
-    goal: 260000,
-    raised: 100000,
-  },
-];
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import defaultImage from "@/assets/images/field.jpeg";
+import EventSmallCard from "@/components/ui/EventSmallCard";
+import RaffleSmallCard from "@/components/ui/RaffleSmallCard";
 
 export default function DetailedFundraiseCard() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const [fundraiser, setFundraiser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<any[]>([]);
+  const [raffles, setRaffles] = useState<any[]>([]);
 
-  const fundraiser = TEMP_FUNDRAISERS.find((item) => item.id === id);
+  const fetchFundraise = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Помилка", "Користувач не авторизований");
+        return;
+      }
+
+      const [fundRes, eventsRes, rafflesRes] = await Promise.all([
+        fetch(`http://localhost:8080/api/v0/fundraises/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`http://localhost:8080/api/v0/events`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`http://localhost:8080/api/v0/raffles`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      const fundData = await fundRes.json();
+      const allEvents = await eventsRes.json();
+      const allRaffles = await rafflesRes.json();
+
+      setEvents(allEvents?.data?.filter((e) => e.fundraiseId === id) || []);
+      setRaffles(allRaffles?.data?.filter((r) => r.fundraiseId === id) || []);
+
+      setFundraiser(fundData);
+      setEvents(eventsData?.data || []);
+      setRaffles(rafflesData?.data || []);
+    } catch (err: any) {
+      Alert.alert("Помилка", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDonate = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Помилка", "Користувач не авторизований");
+        return;
+      }
+
+      const res = await fetch(
+        `http://localhost:8080/api/v0/fundraises/${id}/donate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Не вдалося ініціювати донат");
+      }
+
+      const { paymentUrl } = await res.json();
+      if (paymentUrl) {
+        Linking.openURL(paymentUrl);
+      } else {
+        throw new Error("Посилання для оплати відсутнє");
+      }
+    } catch (err: any) {
+      Alert.alert("Помилка", err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchFundraise();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
 
   if (!fundraiser) {
     return (
@@ -49,39 +120,110 @@ export default function DetailedFundraiseCard() {
     );
   }
 
+  const progress = Math.min(
+    fundraiser.filledAmount / fundraiser.targetAmount || 0,
+    1
+  );
+
   return (
-    <ScrollView className="flex-1 bg-white p-4">
-      <View className="bg-accent p-4 rounded-2xl">
+    <ScrollView className="flex-1 bg-[#f4f6fa] px-4 py-6">
+      <View className="bg-white rounded-3xl shadow-md overflow-hidden">
         <Image
-          source={{ uri: fundraiser.image }}
-          className="w-full h-96 rounded-lg mb-4"
+          source={
+            fundraiser.imageUrl?.trim().length
+              ? { uri: fundraiser.imageUrl.trim() }
+              : defaultImage
+          }
+          className="w-full h-52"
           resizeMode="cover"
         />
 
-        <Text className="text-xl font-bold text-black text-center mb-2">
-          {fundraiser.title}
-        </Text>
-
-        <Text className="text-gray-msg mt-2 text-base leading-5 mb-50">
-          {fundraiser.description}
-        </Text>
-
-        <View className="mt-4">
-          <Text className="text-grey-msg text-sm text-center font-medium">
-            {fundraiser.raised.toLocaleString()} /{" "}
-            {fundraiser.goal.toLocaleString()}
+        <View className="p-6">
+          <Text className="text-2xl font-bold text-center text-black mb-4">
+            {fundraiser.title}
           </Text>
-          <ProgressBar
-            progress={fundraiser.raised / fundraiser.goal}
-            color="#2563EB"
-            className="h-3 rounded-md mt-1"
-          />
-        </View>
 
-        <TouchableOpacity className="bg-primary rounded-lg p-3 mt-5 items-center">
-          <Text className="text-white text-lg font-semibold">Донат 🍩</Text>
-        </TouchableOpacity>
+          <Text className="text-gray-700 text-base text-center mb-4">
+            {fundraiser.description}
+          </Text>
+
+          <Text className="text-sm text-center text-gray-500 mb-2">
+            📅 Завершення:{" "}
+            {new Date(fundraiser.endDate).toLocaleDateString("uk-UA")}
+          </Text>
+
+          <View className="mt-4">
+            <View className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+              <View
+                style={{ width: `${progress * 100}%` }}
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+              />
+            </View>
+            <Text className="text-center text-sm text-gray-600 mt-2">
+              {fundraiser.filledAmount.toLocaleString()} /{" "}
+              {fundraiser.targetAmount.toLocaleString()} грн
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={handleDonate}
+            className="bg-primary rounded-full mt-6 py-3 items-center shadow-md"
+          >
+            <Text className="text-white text-lg font-semibold">Донат 🍩</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {/* Connected Events */}
+      {events.length > 0 && (
+        <View className="mt-6">
+          <Text className="text-xl font-semibold text-gray-800 mb-2 ml-1">
+            Пов'язані події
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="mb-4"
+          >
+            {events.map((event, index) => {
+              const date = new Date(event.startDate);
+              return (
+                <EventSmallCard
+                  key={index}
+                  event={{
+                    id: event.id,
+                    date: date.getDate().toString(),
+                    month: date
+                      .toLocaleString("uk-UA", { month: "short" })
+                      .toUpperCase(),
+                    title: event.title,
+                    location: event.address || "Онлайн",
+                    color: "blue",
+                  }}
+                />
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Connected Raffles */}
+      {raffles.length > 0 && (
+        <View className="mt-4">
+          <Text className="text-xl font-semibold text-gray-800 mb-2 ml-1">
+            Пов'язані розіграші
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="mb-4"
+          >
+            {raffles.map((raffle, index) => (
+              <RaffleSmallCard key={index} raffle={raffle} />
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </ScrollView>
   );
 }

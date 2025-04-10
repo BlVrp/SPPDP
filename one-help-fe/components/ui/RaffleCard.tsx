@@ -2,6 +2,17 @@ import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useRouter, Link } from "expo-router";
 
+function formatDate(isoDateString: string) {
+  const dateObj = new Date(isoDateString);
+  return dateObj.toLocaleString("uk-UA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function RaffleCard({ raffle }: { raffle: any }) {
   const router = useRouter();
 
@@ -25,10 +36,12 @@ export default function RaffleCard({ raffle }: { raffle: any }) {
           <Text className="text-grey-msg text-md mb-2">
             {raffle.description}
           </Text>
-          <Text className="text-grey-msg mt-1">
-            📅 {raffle.start_date}{" "}
-            {raffle.end_date ? `— ${raffle.end_date}` : ""}
-          </Text>
+
+          {/* <Text className="text-grey-msg mt-1">
+            📅 {formatDate(raffle.start_date)} 
+            {raffle.end_date ? ` — ${formatDate(raffle.end_date)}` : ""}
+          </Text> */}
+
           <Text className="text-grey-msg">
             💰 Мін. внесок:{" "}
             {raffle.minimum_donation === 0
@@ -37,8 +50,7 @@ export default function RaffleCard({ raffle }: { raffle: any }) {
           </Text>
 
           <TouchableOpacity
-            onPress={() => console.log("Участь у розіграші")}
-            className="bg-primary rounded-md p-2 mt-4 items-center"
+            className="bg-primary rounded-full mt-6 py-3 items-center shadow-md"
           >
             <Text className="text-white text-lg font-semibold">
               Взяти участь 🎟️

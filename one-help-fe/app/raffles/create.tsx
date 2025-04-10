@@ -1,42 +1,107 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Dropdown } from "react-native-element-dropdown";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { TextInput, Select } from "@/components/controls";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function CreateRaffle() {
   const router = useRouter();
+  const [fundraisers, setFundraisers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample fundraisers list (replace this with data fetching logic)
-  const [fundraisers, setFundraisers] = useState([
-    { id: "1", name: "Fundraiser 1" },
-    { id: "2", name: "Fundraiser 2" },
-    { id: "3", name: "Fundraiser 3" },
-  ]);
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       title: "",
       description: "",
+      start_date: null,
+      end_date: null,
+      format: "",
+      max_participants: "",
       minimum_donation: "",
-      fundraiser_id: "",
+      address: "",
+      fundraise_id: "",
       gifts: [{ title: "", description: "", image: "" }],
     },
   });
+  
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "gifts",
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Новий розіграш:", data);
-    router.back();
+  useEffect(() => {
+    const fetchMyFundraisers = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          return;
+        }
+        const response = await fetch("http://localhost:8080/api/v0/fundraises/my", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Не вдалося отримати ваші збори");
+        }
+        const result = await response.json();
+        setFundraisers(result.data || []);
+      } catch (error) {
+        console.error("Failed to fetch user's fundraises:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyFundraisers();
+  }, []);
+
+  const onSubmit = async (data: any) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Помилка", "Користувач не авторизований");
+        return;
+      }
+
+      const response = await fetch("http://localhost:8080/api/v0/raffles/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: data.title,
+          description: data.description,
+          minimumDonation: Number(data.minimum_donation),
+          fundraiseId: data.fundraiser_id,
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          gifts: data.gifts.map((gift: any) => ({
+            title: gift.title,
+            description: gift.description,
+            imageUrl: gift.image,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Не вдалося створити розіграш");
+      }
+
+      Alert.alert("Успіх", "Розіграш створено успішно ✅");
+      router.push("/raffles");
+    } catch (err: any) {
+      Alert.alert("Помилка", err.message);
+    }
   };
 
   return (
@@ -54,10 +119,11 @@ export default function CreateRaffle() {
               label="Назва розіграшу"
               required="*"
               placeholder="Розіграш подарунків"
+              placeholderTextColor="#9CA3AF"
               onChangeText={onChange}
               value={value}
               error={!!errors.title}
-              errorMessage={errors.title?.message?.toString()}
+              errorMessage={errors.title?.message}
             />
           )}
         />
@@ -71,11 +137,12 @@ export default function CreateRaffle() {
               label="Опис"
               required="*"
               placeholder="Опишіть деталі розіграшу"
+              placeholderTextColor="#9CA3AF"
               multiline
               onChangeText={onChange}
               value={value}
               error={!!errors.description}
-              errorMessage={errors.description?.message?.toString()}
+              errorMessage={errors.description?.message}
             />
           )}
         />
@@ -89,14 +156,16 @@ export default function CreateRaffle() {
               label="Мінімальний донат (₴)"
               required="*"
               placeholder="50"
+              placeholderTextColor="#9CA3AF"
               keyboardType="numeric"
               onChangeText={onChange}
               value={value}
               error={!!errors.minimum_donation}
-              errorMessage={errors.minimum_donation?.message?.toString()}
+              errorMessage={errors.minimum_donation?.message}
             />
           )}
         />
+
         <Controller
           control={control}
           name="fundraiser_id"
@@ -104,13 +173,20 @@ export default function CreateRaffle() {
           render={({ field: { onChange, value } }) => (
             <Select
               data={fundraisers}
-              labelField="name"
+              labelField="title"
               valueField="id"
               label="Збір"
               placeholder="Оберіть збір"
-              searchPlaceholder="Search..."
+              onChange={(selected: any) => onChange(selected.id)}
+              style={{
+                borderWidth: 1,
+                borderColor: '#D1D5DB',
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                backgroundColor: 'white',
+              }}
               value={value}
-              onChange={onChange}
               error={!!errors.fundraiser_id}
               errorMessage={errors?.fundraiser_id?.message}
             />
@@ -132,12 +208,11 @@ export default function CreateRaffle() {
                   label="Назва подарунка"
                   required="*"
                   placeholder="Apple Watch"
+                  placeholderTextColor="#9CA3AF"
                   onChangeText={onChange}
                   value={value}
                   error={!!errors.gifts?.[index]?.title}
-                  errorMessage={errors.gifts?.[
-                    index
-                  ]?.title?.message?.toString()}
+                  errorMessage={errors.gifts?.[index]?.title?.message}
                 />
               )}
             />
@@ -151,13 +226,12 @@ export default function CreateRaffle() {
                   label="Опис подарунка"
                   required="*"
                   placeholder="Опис подарунка..."
+                  placeholderTextColor="#9CA3AF"
                   multiline
                   onChangeText={onChange}
                   value={value}
                   error={!!errors.gifts?.[index]?.description}
-                  errorMessage={errors.gifts?.[
-                    index
-                  ]?.description?.message?.toString()}
+                  errorMessage={errors.gifts?.[index]?.description?.message}
                 />
               )}
             />
@@ -169,12 +243,11 @@ export default function CreateRaffle() {
                 <TextInput
                   label="Посилання на зображення"
                   placeholder="https://example.com/gift.jpg"
+                  placeholderTextColor="#9CA3AF"
                   onChangeText={onChange}
                   value={value}
                   error={!!errors.gifts?.[index]?.image}
-                  errorMessage={errors.gifts?.[
-                    index
-                  ]?.image?.message?.toString()}
+                  errorMessage={errors.gifts?.[index]?.image?.message}
                 />
               )}
             />
@@ -201,7 +274,7 @@ export default function CreateRaffle() {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="bg-primary rounded-lg p-4 items-center"
+          className="bg-primary rounded-lg p-1 items-center"
         >
           <Text className="text-white text-lg font-semibold">
             Створити розіграш ✅

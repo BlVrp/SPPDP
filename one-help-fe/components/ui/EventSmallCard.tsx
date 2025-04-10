@@ -1,8 +1,10 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 
 interface EventCardProps {
   event: {
+    id: string;
     date: string;
     month: string;
     title: string;
@@ -12,6 +14,12 @@ interface EventCardProps {
 }
 
 export default function EventSmallCard({ event }: EventCardProps) {
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push(`/events/${event.id}`);
+  };
+
   return (
     <View className="bg-accent p-4 rounded-2xl w-64 mr-4">
       <View className="flex-row items-center">
@@ -27,7 +35,10 @@ export default function EventSmallCard({ event }: EventCardProps) {
         </View>
       </View>
 
-      <TouchableOpacity className="bg-primary py-2 rounded-xl mt-3">
+      <TouchableOpacity
+        className="bg-primary py-2 rounded-xl mt-3"
+        onPress={handlePress}
+      >
         <Text className="text-white text-center font-semibold">
           Зареєструватись 📝
         </Text>

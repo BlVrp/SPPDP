@@ -1,40 +1,68 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-
-const TEMP_EVENTS = [
-  {
-    id: "1",
-    title: "Благодійний марафон",
-    description: `Долучайтеся до нашого благодійного марафону, де ви зможете взяти участь у захопливих активностях, підтримати добру справу та отримати незабутні враження!`,
-    image:
-      "https://fartlek.com.ua/wp-content/uploads/2022/08/balakliia-run-2022-1140x640.jpg",
-    start_date: "2025-04-01",
-    end_date: "2025-04-10",
-    format: "offline",
-    minimum_donation: 50,
-    max_participants: 100,
-    location: "Київ, Хрещатик 1",
-  },
-  {
-    id: "2",
-    title: "Онлайн-лекція з мотивації",
-    description: `Запрошуємо на унікальну лекцію, де ви дізнаєтеся секрети успіху від відомого спікера. Це ваш шанс змінити життя на краще!`,
-    image: "https://i.ytimg.com/vi/s-0V76nC1S4/maxresdefault.jpg",
-    start_date: "2025-05-15",
-    end_date: "2025-05-15",
-    format: "online",
-    minimum_donation: 0,
-    max_participants: 500,
-    location: "Zoom",
-  },
-];
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Linking } from "react-native";
 
 export default function DetailedEventCard() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const event = TEMP_EVENTS.find((item) => item.id === id);
+  const [event, setEvent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("uk-UA");
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          Alert.alert("Помилка", "Користувач не авторизований");
+          router.back();
+          return;
+        }
+
+        const res = await fetch(`http://localhost:8080/api/v0/events/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || "Не вдалося завантажити подію");
+        }
+
+        const data = await res.json();
+        setEvent(data);
+      } catch (err: any) {
+        Alert.alert("Помилка", err.message);
+        router.back();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
 
   if (!event) {
     return (
@@ -51,45 +79,72 @@ export default function DetailedEventCard() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-white p-4">
-      <View className="bg-accent p-4 rounded-2xl">
+    <ScrollView className="flex-1 bg-[#f4f6fa] px-4 py-6">
+      <View className="bg-white rounded-3xl shadow-md overflow-hidden">
         <Image
-          source={{ uri: event.image }}
-          className="w-full h-96 rounded-lg mb-4"
+          source={{
+            uri:
+              event.imageUrl?.trim().length > 0
+                ? event.imageUrl
+                : "https://me.usembassy.gov/wp-content/uploads/sites/250/Ukraine_grain_black_sea_Agriculture_3-1068x712-1-1068x684.jpg",
+          }}
+          className="w-full h-52"
           resizeMode="cover"
         />
 
-        <Text className="text-xl font-bold text-black text-center mb-2">
-          {event.title}
-        </Text>
+        <View className="p-6">
+          {/* Title */}
+          <Text className="text-2xl font-bold text-center text-black mb-2">
+            {event.title}
+          </Text>
 
-        <Text className="text-gray-msg mt-2 text-base leading-5">
-          {event.description}
-        </Text>
+          {/* Description */}
+          <Text className="text-gray-700 text-base text-center mb-4">
+            {event.description}
+          </Text>
 
-        <View className="mt-4 bg-white p-4 rounded-lg shadow-sm">
-          <Text className="text-grey-msg">
-            📅 {event.start_date} – {event.end_date}
-          </Text>
-          <Text className="text-grey-msg">
-            📍 {event.format === "offline" ? event.location : "Онлайн"}
-          </Text>
-          <Text className="text-grey-msg">
-            👥 Макс. учасників: {event.max_participants}
-          </Text>
-          <Text className="text-grey-msg">
-            💰 Мін. внесок:{" "}
-            {event.minimum_donation === 0
-              ? "Безкоштовно"
-              : `${event.minimum_donation} грн`}
-          </Text>
+          {/* Event Info */}
+          <View className="bg-[#f9fafb] p-4 rounded-xl space-y-2">
+            <Text className="text-gray-600 text-sm">
+              📅 Дати: {formatDate(event.startDate)} –{" "}
+              {event.endDate ? formatDate(event.endDate) : "—"}
+            </Text>
+            <Text className="text-gray-600 text-sm">
+              📍 Місце:{" "}
+              {event.format === "ONLINE"
+                ? "Онлайн"
+                : event.address || "Без адреси"}
+            </Text>
+            <Text className="text-gray-600 text-sm">
+              👥 Учасників: {event.maxParticipants}
+            </Text>
+            <Text className="text-gray-600 text-sm">
+              💰 Мін. внесок:{" "}
+              {event.minimumDonation === 0
+                ? "Безкоштовно"
+                : `${event.minimumDonation} грн`}
+            </Text>
+          </View>
+
+          {/* Button */}
+          <TouchableOpacity
+            className="bg-primary rounded-full py-3 mt-6 items-center shadow-md"
+            onPress={() => {
+              if (event.formUrl?.trim()) {
+                Linking.openURL(event.formUrl);
+              } else {
+                console.log(
+                  "Посилання відсутнє",
+                  "Форма реєстрації наразі недоступна."
+                );
+              }
+            }}
+          >
+            <Text className="text-white text-lg font-semibold">
+              Взяти участь 🎟️
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity className="bg-primary rounded-lg p-3 mt-5 items-center">
-          <Text className="text-white text-lg font-semibold">
-            Взяти участь 🎟️
-          </Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );

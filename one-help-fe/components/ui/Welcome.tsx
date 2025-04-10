@@ -19,7 +19,7 @@ const Welcome = ({ user }: WelcomeProps) => {
       </Text>
 
       <View className="flex-row justify-between mt-4 space-x-4 mb-8">
-        <View className="bg-white p-4 rounded-xl mr-3 items-left flex-1">
+        <View className="bg-white p-4 rounded-xl items-left flex-1">
           <Text className="text-2xl text-grey-msg mb-1">🍩</Text>
           <Text className="text-xl text-grey-msg mb-2">Донатів</Text>
           <Text className="text-2xl text-black">₴ {user.donated}</Text>

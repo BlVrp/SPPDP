@@ -7,8 +7,8 @@ import {
   Animated,
   PanResponder,
 } from "react-native";
-import { Link } from "expo-router";
-import { useEffect, useRef } from "react";
+import { Link, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import Icon from "react-native-vector-icons/Feather";
 import { StatusBar } from "react-native";
 
@@ -18,7 +18,9 @@ interface SidebarProps {
 }
 
 export default function SideBar({ isOpen, onClose }: SidebarProps) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const translateX = useRef(new Animated.Value(-300)).current; // Початкове положення за екраном
+  const router = useRouter();
 
   useEffect(() => {
     Animated.timing(translateX, {
@@ -27,6 +29,16 @@ export default function SideBar({ isOpen, onClose }: SidebarProps) {
       useNativeDriver: true,
     }).start();
   }, [isOpen]);
+
+  const handleLoginLogout = () => {
+    setIsLoggedIn(!isLoggedIn);
+    onClose();
+    if (isLoggedIn) {
+      setTimeout(() => {
+        router.push("/auth/register");
+      }, 300);
+    }
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -55,7 +67,7 @@ export default function SideBar({ isOpen, onClose }: SidebarProps) {
     <Modal visible={isOpen} animationType="fade" transparent>
       <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 bg-black bg-opacity-50">
-          {/* Sidebar Container */}
+
           <Animated.View
             {...panResponder.panHandlers}
             style={{
@@ -70,12 +82,10 @@ export default function SideBar({ isOpen, onClose }: SidebarProps) {
               shadowRadius: 4,
             }}
           >
-            {/* Close Button */}
             <TouchableOpacity onPress={onClose} className="self-end mb-4">
               <Icon name="x" size={28} color="black" />
             </TouchableOpacity>
 
-            {/* Sidebar Menu */}
             <Link href="/" className="py-2" onPress={onClose}>
               <Text className="text-2xl font-semibold">🏠 Головна</Text>
             </Link>
@@ -95,6 +105,15 @@ export default function SideBar({ isOpen, onClose }: SidebarProps) {
             <Link href="/settings" className="pt-4 py-2" onPress={onClose}>
               <Text className="text-2xl font-semibold">⚙ Налаштування</Text>
             </Link>
+
+            {/* <TouchableOpacity
+              onPress={handleLoginLogout}
+              className="bg-blue-600 py-2 rounded-xl w-40 items-center absolute bottom-6 right-6"
+            >
+              <Text className="text-white text-lg font-semibold">
+                {isLoggedIn ? "🚪 Вийти" : "🔑 Увійти"}
+              </Text>
+            </TouchableOpacity> */}
           </Animated.View>
         </View>
       </TouchableWithoutFeedback>
