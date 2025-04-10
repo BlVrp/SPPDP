@@ -40,7 +40,7 @@ func (db *eventsDB) Create(ctx context.Context, event events.Event) error {
 	defer DeferCommitRollback(tx, &err)
 
 	query := `INSERT INTO events(event_id, title, description, start_date, end_date, format, max_participants, minimum_donation, address, status, fundraise_id, created_at, form_url)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
 	_, err = tx.ExecContext(ctx, query, event.ID, event.Title, event.Description, event.StartDate, event.EndDate, event.Format, event.MaxParticipants, event.MinimumDonation, event.Address, event.Status, event.FundraiseId, event.CreatedAt, event.FormUrl)
 	if err != nil {
 		return ErrEvents.Wrap(err)

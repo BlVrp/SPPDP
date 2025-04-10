@@ -32,7 +32,8 @@ export default function CreateEvent() {
       max_participants: "",
       minimum_donation: "",
       address: "",
-      imageUrl:""
+      imageUrl:"",
+      formUrl: "",
     },
   });
 
@@ -94,6 +95,7 @@ export default function CreateEvent() {
           maxParticipants: Number(data.max_participants),
           minimumDonation: Number(data.minimum_donation),
           imageUrl: data.imageUrl || "",
+          formUrl: data.formUrl || "",
         }),
       });
 
@@ -324,6 +326,21 @@ export default function CreateEvent() {
     <TextInput
       label="Зображення (необов'язково)"
       placeholder="https://example.com/image.jpg"
+      placeholderTextColor="#9CA3AF"
+      onChangeText={onChange}
+      value={value}
+      error={false}
+    />
+  )}
+/>
+
+<Controller
+  control={control}
+  name="formUrl"
+  render={({ field: { onChange, value } }) => (
+    <TextInput
+      label="Форма реєстрації (Google Form)"
+      placeholder="https://forms.gle/..."
       placeholderTextColor="#9CA3AF"
       onChangeText={onChange}
       value={value}

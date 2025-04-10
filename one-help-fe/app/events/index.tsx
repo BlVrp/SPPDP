@@ -18,7 +18,7 @@ export default function EventList() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const LIMIT = 5;
+  const LIMIT = 2;
 
   const fetchEvents = async () => {
     try {

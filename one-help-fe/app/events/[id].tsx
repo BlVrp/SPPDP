@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Linking } from "react-native";
 
 export default function DetailedEventCard() {
   const { id } = useLocalSearchParams();
@@ -128,6 +129,16 @@ export default function DetailedEventCard() {
           {/* Button */}
           <TouchableOpacity
             className="bg-primary rounded-full py-3 mt-6 items-center shadow-md"
+            onPress={() => {
+              if (event.formUrl?.trim()) {
+                Linking.openURL(event.formUrl);
+              } else {
+                console.log(
+                  "Посилання відсутнє",
+                  "Форма реєстрації наразі недоступна."
+                );
+              }
+            }}
           >
             <Text className="text-white text-lg font-semibold">
               Взяти участь 🎟️
