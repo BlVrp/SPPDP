@@ -62,14 +62,33 @@ export default function RaffleDetail() {
   };
 
   const downloadCSV = async () => {
-    const csv = ["Ім'я,Прізвище,Місто"];
+    const csvHeaders = [
+      "Ім'я",
+      "Прізвище",
+      "Місто",
+      "Телефон",
+      "Email",
+      "Пошта",
+      "Відділення",
+    ];
+    const csv = [csvHeaders.join(",")];
+  
     participants.forEach((p) => {
-      csv.push(`${p.firstName},${p.lastName},${p.city}`);
+      const row = [
+        p.firstName,
+        p.lastName,
+        p.city,
+        p.phoneNumber,
+        p.email,
+        p.post,
+        p.postDepartment,
+      ];
+      csv.push(row.map((val) => `"${val || ""}"`).join(","));
     });
+  
     const csvString = csv.join("\n");
-
+  
     if (Platform.OS === "web") {
-      // WEB: Створюємо Blob і завантажуємо
       try {
         const blob = new Blob([csvString], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
@@ -84,7 +103,6 @@ export default function RaffleDetail() {
         Alert.alert("Помилка", "Не вдалося завантажити CSV файл.");
       }
     } else {
-      // MOBILE (iOS/Android): Через FileSystem + Sharing
       try {
         const fileUri = FileSystem.documentDirectory + "participants.csv";
         await FileSystem.writeAsStringAsync(fileUri, csvString, {
@@ -97,6 +115,7 @@ export default function RaffleDetail() {
       }
     }
   };
+  
 
   useEffect(() => {
     if (id) fetchRaffle();
@@ -175,45 +194,44 @@ export default function RaffleDetail() {
           </Text>
         </TouchableOpacity> */}
 
-        {showParticipants &&
-          participants.length > 0 &&
-          user?.id === fundraise?.organizerId && (
-            <View className="mt-4">
-              <TouchableOpacity
-                className="mt-4 bg-gray-200 py-2 px-4 rounded-full self-center"
-                onPress={() => setShowParticipants((prev) => !prev)}
-              >
-                <Text className="text-center text-black font-medium">
-                  {showParticipants
-                    ? "Сховати учасників"
-                    : "Показати учасників"}
-                </Text>
-              </TouchableOpacity>
+{user?.id === fundraise?.organizerId && participants.length > 0 && (
+  <>
+    <TouchableOpacity
+      className="mt-4 bg-gray-200 py-2 px-4 rounded-full self-center"
+      onPress={() => setShowParticipants((prev) => !prev)}
+    >
+      <Text className="text-center text-black font-medium">
+        {showParticipants ? "Сховати учасників" : "Показати учасників"}
+      </Text>
+    </TouchableOpacity>
 
-              {participants.map((p, i) => (
-                <View
-                  key={i}
-                  className="bg-white p-3 mb-2 rounded-xl shadow-sm"
-                >
-                  <Text className="text-black font-semibold">
-                    {p.firstName} {p.lastName}
-                  </Text>
-                  <Text className="text-gray-500 text-sm">{p.city}</Text>
-                </View>
-              ))}
+    {showParticipants && (
+      <View className="mt-4">
+        {participants.map((p, i) => (
+          <View
+            key={i}
+            className="bg-white p-3 mb-2 rounded-xl shadow-sm"
+          >
+            <Text className="text-black font-semibold">
+              {p.firstName} {p.lastName}
+            </Text>
+            <Text className="text-gray-500 text-sm">{p.city}</Text>
+          </View>
+        ))}
 
-              {user?.id === fundraise?.organizerId && (
-                <TouchableOpacity
-                  className="mt-6 bg-blue-600 py-2 px-4 rounded-full self-center"
-                  onPress={downloadCSV}
-                >
-                  <Text className="text-white font-medium">
-                    ⬇️ Завантажити CSV
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
+        <TouchableOpacity
+          className="mt-6 bg-blue-600 py-2 px-4 rounded-full self-center"
+          onPress={downloadCSV}
+        >
+          <Text className="text-white font-medium">⬇️ Завантажити CSV</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </>
+)}
+
+
+
       </View>
     </ScrollView>
   );
