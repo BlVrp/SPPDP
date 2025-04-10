@@ -1138,6 +1138,9 @@ const docTemplate = `{
                 "endDate": {
                     "type": "string"
                 },
+                "formUrl": {
+                    "type": "string"
+                },
                 "format": {
                     "type": "string"
                 },
@@ -1185,6 +1188,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "endDate": {
+                    "type": "string"
+                },
+                "formUrl": {
                     "type": "string"
                 },
                 "format": {

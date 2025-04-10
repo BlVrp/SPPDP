@@ -95,6 +95,7 @@ func (controller *Events) Create(w http.ResponseWriter, r *http.Request) {
 		Address:         request.Address,
 		FundraiseId:     request.FundraiseId,
 		ImageUrl:        request.ImageUrl,
+		FormUrl:         request.FormUrl,
 	}
 
 	event, err := controller.events.Create(ctx, createParams)
