@@ -27,5 +27,5 @@ type DB interface {
 	// Delete user from the database.
 	Delete(ctx context.Context, id uuid.UUID) error
 	// ListParticipants returns all raffle participants.
-	ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]User, error)
+	ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]UserWithContacts, error)
 }

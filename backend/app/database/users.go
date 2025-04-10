@@ -126,7 +126,7 @@ func (db *usersDB) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 // ListRaffleParticipants returns all raffle participants.
-func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]users.User, error) {
+func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]users.UserWithContacts, error) {
 	query :=
 		`SELECT 
 		u.user_id, 
@@ -136,9 +136,12 @@ func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUI
 		u.file_name, 
 		d.city, 
 		d.post, 
-		d.post_department
+		d.post_department,
+		uc.email,
+		uc.phone_number
 	FROM users u
 	LEFT JOIN delivery_addresses d ON u.user_id = d.user_id
+	LEFT JOIN user_creds uc ON u.user_id = uc.user_id
 	WHERE u.user_id IN (
 		SELECT don.user_id
 		FROM donations don
@@ -170,11 +173,11 @@ func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUI
 	}
 	defer rows.Close()
 
-	var list []users.User
+	var list []users.UserWithContacts
 
 	for rows.Next() {
-		var user users.User
-		var city, post, postDepartment sql.NullString
+		var user users.UserWithContacts
+		var city, post, postDepartment, email, phoneNumber sql.NullString
 
 		err := rows.Scan(
 			&user.ID,
@@ -185,6 +188,8 @@ func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUI
 			&city,
 			&post,
 			&postDepartment,
+			&email,
+			&phoneNumber,
 		)
 		if err != nil {
 			return nil, ErrUsers.Wrap(err)
@@ -193,6 +198,8 @@ func (db *usersDB) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUI
 		user.City = city.String
 		user.Post = post.String
 		user.PostDepartment = postDepartment.String
+		user.Email = email.String
+		user.PhoneNumber = phoneNumber.String
 
 		list = append(list, user)
 	}
