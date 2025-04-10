@@ -10,15 +10,18 @@ import {
   Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ProgressBar } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import defaultImage from "@/assets/images/field.jpeg";
+import EventSmallCard from "@/components/ui/EventSmallCard";
+import RaffleSmallCard from "@/components/ui/RaffleSmallCard";
 
 export default function DetailedFundraiseCard() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [fundraiser, setFundraiser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<any[]>([]);
+  const [raffles, setRaffles] = useState<any[]>([]);
 
   const fetchFundraise = async () => {
     try {
@@ -28,23 +31,28 @@ export default function DetailedFundraiseCard() {
         return;
       }
 
-      const response = await fetch(
-        `http://localhost:8080/api/v0/fundraises/${id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const [fundRes, eventsRes, rafflesRes] = await Promise.all([
+        fetch(`http://localhost:8080/api/v0/fundraises/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`http://localhost:8080/api/v0/events`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`http://localhost:8080/api/v0/raffles`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Помилка при отриманні збору");
-      }
+      const fundData = await fundRes.json();
+      const allEvents = await eventsRes.json();
+      const allRaffles = await rafflesRes.json();
 
-      const data = await response.json();
-      setFundraiser(data);
+      setEvents(allEvents?.data?.filter((e) => e.fundraiseId === id) || []);
+      setRaffles(allRaffles?.data?.filter((r) => r.fundraiseId === id) || []);
+
+      setFundraiser(fundData);
+      setEvents(eventsData?.data || []);
+      setRaffles(rafflesData?.data || []);
     } catch (err: any) {
       Alert.alert("Помилка", err.message);
     } finally {
@@ -112,7 +120,10 @@ export default function DetailedFundraiseCard() {
     );
   }
 
-  const progress = Math.min(fundraiser.filledAmount / fundraiser.targetAmount || 0, 1);
+  const progress = Math.min(
+    fundraiser.filledAmount / fundraiser.targetAmount || 0,
+    1
+  );
 
   return (
     <ScrollView className="flex-1 bg-[#f4f6fa] px-4 py-6">
@@ -128,68 +139,91 @@ export default function DetailedFundraiseCard() {
         />
 
         <View className="p-6">
-          {/* Title */}
           <Text className="text-2xl font-bold text-center text-black mb-4">
             {fundraiser.title}
           </Text>
 
-          {/* Description */}
           <Text className="text-gray-700 text-base text-center mb-4">
             {fundraiser.description}
           </Text>
 
-          {/* End date */}
           <Text className="text-sm text-center text-gray-500 mb-2">
             📅 Завершення:{" "}
             {new Date(fundraiser.endDate).toLocaleDateString("uk-UA")}
           </Text>
-          
 
-          {/* Progress
           <View className="mt-4">
-            <ProgressBar
-              progress={progress}
-              color="#2563EB"
-              style={{
-                height: 12,
-                borderRadius: 6,
-                backgroundColor: "#E5E7EB",
-              }}
-            />
+            <View className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+              <View
+                style={{ width: `${progress * 100}%` }}
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+              />
+            </View>
             <Text className="text-center text-sm text-gray-600 mt-2">
               {fundraiser.filledAmount.toLocaleString()} /{" "}
               {fundraiser.targetAmount.toLocaleString()} грн
             </Text>
-          </View> */}
+          </View>
 
-          {/* Custom Progress Bar */}
-<View className="mt-4">
-  <View className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
-    <View
-      style={{
-        width: `${progress * 100}%`,
-      }}
-      className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
-    />
-  </View>
-  <Text className="text-center text-sm text-gray-600 mt-2">
-    {fundraiser.filledAmount.toLocaleString()} /{" "}
-    {fundraiser.targetAmount.toLocaleString()} грн
-  </Text>
-</View>
-
-
-          {/* Donate button */}
           <TouchableOpacity
             onPress={handleDonate}
             className="bg-primary rounded-full mt-6 py-3 items-center shadow-md"
           >
-            <Text className="text-white text-lg font-semibold">
-              Донат 🍩
-            </Text>
+            <Text className="text-white text-lg font-semibold">Донат 🍩</Text>
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Connected Events */}
+      {events.length > 0 && (
+        <View className="mt-6">
+          <Text className="text-xl font-semibold text-gray-800 mb-2 ml-1">
+            Пов'язані події
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="mb-4"
+          >
+            {events.map((event, index) => {
+              const date = new Date(event.startDate);
+              return (
+                <EventSmallCard
+                  key={index}
+                  event={{
+                    id: event.id,
+                    date: date.getDate().toString(),
+                    month: date
+                      .toLocaleString("uk-UA", { month: "short" })
+                      .toUpperCase(),
+                    title: event.title,
+                    location: event.address || "Онлайн",
+                    color: "blue",
+                  }}
+                />
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Connected Raffles */}
+      {raffles.length > 0 && (
+        <View className="mt-4">
+          <Text className="text-xl font-semibold text-gray-800 mb-2 ml-1">
+            Пов'язані розіграші
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="mb-4"
+          >
+            {raffles.map((raffle, index) => (
+              <RaffleSmallCard key={index} raffle={raffle} />
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </ScrollView>
   );
 }

@@ -10,16 +10,21 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
+import { useAuth } from "@/context/AuthContext";
 
 export default function RaffleDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [raffle, setRaffle] = useState<any>(null);
-  const [currentGiftIndex, setCurrentGiftIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-
+  const [fundraise, setFundraise] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
   const [showParticipants, setShowParticipants] = useState(false);
+  const [currentGiftIndex, setCurrentGiftIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const fetchRaffle = async () => {
     try {
@@ -30,18 +35,25 @@ export default function RaffleDetail() {
       }
 
       const res = await fetch(`http://localhost:8080/api/v0/raffles/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Не вдалося отримати розіграш");
-      }
-
+      if (!res.ok) throw new Error("Не вдалося отримати розіграш");
       const result = await res.json();
       setRaffle(result);
+
+      const fundraiseRes = await fetch(
+        `http://localhost:8080/api/v0/fundraises/${result.fundraiseId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const fundraiseData = await fundraiseRes.json();
+      setFundraise(fundraiseData);
+
+      const partRes = await fetch(
+        `http://localhost:8080/api/v0/users/raffle-participants/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const participantsData = await partRes.json();
+      setParticipants(participantsData);
     } catch (err: any) {
       Alert.alert("Помилка", err.message);
     } finally {
@@ -49,54 +61,57 @@ export default function RaffleDetail() {
     }
   };
 
-  const fetchParticipants = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) return;
+  const downloadCSV = async () => {
+    const csv = ["Ім'я,Прізвище,Місто"];
+    participants.forEach((p) => {
+      csv.push(`${p.firstName},${p.lastName},${p.city}`);
+    });
+    const csvString = csv.join("\n");
 
-      const res = await fetch(
-        `http://localhost:8080/api/v0/users/raffle-participants/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Не вдалося отримати учасників");
+    if (Platform.OS === "web") {
+      // WEB: Створюємо Blob і завантажуємо
+      try {
+        const blob = new Blob([csvString], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "participants.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error("Помилка експорту на Web:", error);
+        Alert.alert("Помилка", "Не вдалося завантажити CSV файл.");
       }
-
-      const data = await res.json();
-      setParticipants(data);
-    } catch (err: any) {
-      Alert.alert("Помилка", err.message);
+    } else {
+      // MOBILE (iOS/Android): Через FileSystem + Sharing
+      try {
+        const fileUri = FileSystem.documentDirectory + "participants.csv";
+        await FileSystem.writeAsStringAsync(fileUri, csvString, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+        await Sharing.shareAsync(fileUri);
+      } catch (error) {
+        console.error("Помилка експорту на мобільному:", error);
+        Alert.alert("Помилка", "Не вдалося поділитися CSV файлом.");
+      }
     }
   };
 
-  const toggleParticipants = async () => {
-    if (!showParticipants && participants.length === 0) {
-      await fetchParticipants();
-    }
-    setShowParticipants(!showParticipants);
-  };
+  useEffect(() => {
+    if (id) fetchRaffle();
+  }, [id]);
 
   const nextGift = () => {
     setCurrentGiftIndex((prev) =>
       prev + 1 < raffle.gifts.length ? prev + 1 : 0
     );
   };
-
   const prevGift = () => {
     setCurrentGiftIndex((prev) =>
       prev - 1 >= 0 ? prev - 1 : raffle.gifts.length - 1
     );
   };
-
-  useEffect(() => {
-    if (id) fetchRaffle();
-  }, [id]);
 
   if (loading) {
     return (
@@ -106,18 +121,9 @@ export default function RaffleDetail() {
     );
   }
 
-  if (!raffle) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white p-6">
-        <Text className="text-lg text-gray-msg">Розіграш не знайдено 😕</Text>
-      </View>
-    );
-  }
-
   return (
     <ScrollView className="flex-1 bg-white p-4">
       <View className="bg-accent p-5 rounded-3xl shadow-sm">
-        {/* Gift Navigation */}
         {raffle.gifts.length > 1 && (
           <View className="flex-row justify-center items-center space-x-8 mb-2">
             <TouchableOpacity onPress={prevGift}>
@@ -132,21 +138,16 @@ export default function RaffleDetail() {
           </View>
         )}
 
-        {/* Gift Image and Title */}
-        {raffle.gifts.length > 0 && (
-          <View className="items-center">
-            <Image
-              source={{ uri: raffle.gifts[currentGiftIndex].imageUrl }}
-              className="w-full h-64 rounded-xl mb-2"
-              resizeMode="cover"
-            />
-            <Text className="text-lg font-medium text-gray-700 text-center mb-2">
-              🎁 {raffle.gifts[currentGiftIndex].title}
-            </Text>
-          </View>
-        )}
+        <Image
+          source={{ uri: raffle.gifts[currentGiftIndex].imageUrl }}
+          className="w-full h-64 rounded-xl mb-2"
+          resizeMode="cover"
+        />
 
-        {/* Donate Button */}
+        <Text className="text-lg font-medium text-gray-700 text-center mb-2">
+          🎁 {raffle.gifts[currentGiftIndex].title}
+        </Text>
+
         <TouchableOpacity
           className="bg-primary rounded-full py-3 mt-4 items-center"
           onPress={() => router.push(`/fundraises/${raffle.fundraiseId}`)}
@@ -156,66 +157,63 @@ export default function RaffleDetail() {
           </Text>
         </TouchableOpacity>
 
-        {/* Raffle Title */}
         <Text className="text-2xl font-bold text-black text-center mt-6">
           {raffle.title}
         </Text>
 
-        {/* Raffle Description */}
         <Text className="text-gray-600 text-base text-center mt-3">
           {raffle.description}
         </Text>
 
-        {/* Toggle Participants */}
+        {/* Toggle participants
         <TouchableOpacity
-          onPress={toggleParticipants}
-          className=" mt-6 py-2 px-4 rounded-xl items-center"
+          className="mt-4 bg-gray-200 py-2 px-4 rounded-full self-center"
+          onPress={() => setShowParticipants((prev) => !prev)}
         >
-          <Text className="text-primary font-medium">
+          <Text className="text-center text-black font-medium">
             {showParticipants ? "Сховати учасників" : "Показати учасників"}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        {/* Participant List */}
-        {showParticipants && (
-          <View className="mt-4 bg-white rounded-xl px-4 py-3 shadow-sm">
-            <Text className="text-lg font-semibold mb-3 text-center">
-              Учасники ({participants.length})
-            </Text>
-            {participants.length === 0 ? (
-              <Text className="text-gray-500 text-center">
-                Поки що немає учасників
-              </Text>
-            ) : (
-              participants.map((p) => (
-                <View key={p.id} className="flex-row items-center mb-3">
-                  {p.imageUrl ? (
-                    <Image
-                      source={{ uri: p.imageUrl }}
-                      className="w-10 h-10 rounded-full mr-3"
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View className="w-10 h-10 bg-gray-300 rounded-full mr-3 items-center justify-center">
-                      <Text className="text-white text-sm">
-                        {p.firstName[0]}
-                        {p.lastName[0]}
-                      </Text>
-                    </View>
-                  )}
-                  <View>
-                    <Text className="text-black font-medium">
-                      {p.firstName} {p.lastName}
-                    </Text>
-                    {p.city && (
-                      <Text className="text-gray-500 text-sm">{p.city}</Text>
-                    )}
-                  </View>
+        {showParticipants &&
+          participants.length > 0 &&
+          user?.id === fundraise?.organizerId && (
+            <View className="mt-4">
+              <TouchableOpacity
+                className="mt-4 bg-gray-200 py-2 px-4 rounded-full self-center"
+                onPress={() => setShowParticipants((prev) => !prev)}
+              >
+                <Text className="text-center text-black font-medium">
+                  {showParticipants
+                    ? "Сховати учасників"
+                    : "Показати учасників"}
+                </Text>
+              </TouchableOpacity>
+
+              {participants.map((p, i) => (
+                <View
+                  key={i}
+                  className="bg-white p-3 mb-2 rounded-xl shadow-sm"
+                >
+                  <Text className="text-black font-semibold">
+                    {p.firstName} {p.lastName}
+                  </Text>
+                  <Text className="text-gray-500 text-sm">{p.city}</Text>
                 </View>
-              ))
-            )}
-          </View>
-        )}
+              ))}
+
+              {user?.id === fundraise?.organizerId && (
+                <TouchableOpacity
+                  className="mt-6 bg-blue-600 py-2 px-4 rounded-full self-center"
+                  onPress={downloadCSV}
+                >
+                  <Text className="text-white font-medium">
+                    ⬇️ Завантажити CSV
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
       </View>
     </ScrollView>
   );
