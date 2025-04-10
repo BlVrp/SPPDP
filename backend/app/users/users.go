@@ -63,6 +63,21 @@ type RegisterParams struct {
 	Password    string
 }
 
+type UserWithContacts struct {
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Website   string
+	ImageUrl  string
+
+	City           string
+	Post           string
+	PostDepartment string
+
+	PhoneNumber string
+	Email       string
+}
+
 // AuthorizeParams holds parameters needed to authorize user.
 type AuthorizeParams struct {
 	Identifier string // INFO: email of phone number.

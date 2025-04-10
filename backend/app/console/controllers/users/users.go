@@ -345,7 +345,7 @@ func (controller *Users) Update(w http.ResponseWriter, r *http.Request) {
 // @Tags	Users
 // @Produce	json
 // @Param	Authorization	header	string	false	"Bearer token to authorize access"
-// @Success	200		{object}	[]UserPublicView
+// @Success	200		{object}	[]UserView
 // @Failure 400,401,404,500	{object}	common.ErrResponseCode
 // @Router	/users/raffle-participants/{id}	[get].
 func (controller *Users) GetRaffleParticipants(w http.ResponseWriter, r *http.Request) {
@@ -369,10 +369,27 @@ func (controller *Users) GetRaffleParticipants(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	var viewList = make([]UserPublicView, len(userList))
+	var viewList = make([]UserView, len(userList))
 
 	for i, user := range userList {
-		viewList[i] = *ToUserPublicView(&user)
+		var userPart = users.User{
+			ID:        user.ID,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+
+			Website:  user.Website,
+			ImageUrl: user.ImageUrl,
+			DeliveryAddress: users.DeliveryAddress{
+				City:           user.City,
+				Post:           user.Post,
+				PostDepartment: user.PostDepartment,
+			},
+		}
+		var credsPart = credentials.Credentials{
+			Email:       user.Email,
+			PhoneNumber: user.PhoneNumber,
+		}
+		viewList[i] = *ToUserView(&userPart, &credsPart)
 	}
 
 	if err = json.NewEncoder(w).Encode(viewList); err != nil {

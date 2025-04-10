@@ -289,7 +289,7 @@ func (service *Service) hashPassword(password string) string {
 }
 
 // ListRaffleParticipants returns list of raffle participants.
-func (service *Service) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]User, error) {
+func (service *Service) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]UserWithContacts, error) {
 	list, err := service.users.ListRaffleParticipants(ctx, raffleID)
 	if err != nil {
 		return nil, Error.Wrap(err)

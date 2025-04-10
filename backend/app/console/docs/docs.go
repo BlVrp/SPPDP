@@ -983,7 +983,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/users.UserPublicView"
+                                "$ref": "#/definitions/users.UserView"
                             }
                         }
                     },
