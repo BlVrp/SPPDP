@@ -288,3 +288,13 @@ func (service *Service) hashPassword(password string) string {
 
 	return hex.EncodeToString(hash[:])
 }
+
+// ListRaffleParticipants returns list of raffle participants.
+func (service *Service) ListRaffleParticipants(ctx context.Context, raffleID uuid.UUID) ([]User, error) {
+	list, err := service.users.ListRaffleParticipants(ctx, raffleID)
+	if err != nil {
+		return nil, Error.Wrap(err)
+	}
+
+	return list, nil
+}

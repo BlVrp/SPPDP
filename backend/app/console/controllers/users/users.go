@@ -277,3 +277,107 @@ func (controller *Users) ChangePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
+// Update is an endpoint for updating user data.
+// @Summary	Updates user data
+// @Tags	Users
+// @Accept	json
+// @Produce	json
+// @Param	request	body	UpdateRequest	true	"Update request fields"
+// @Success	200		{object}	UserView
+// @Failure	400,401,500	{object}	common.ErrResponseCode
+// @Router	/users/	[patch].
+func (controller *Users) Update(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var request UpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		controller.log.Error("failed to decode update request", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusBadRequest, err).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	creds, err := credentials.GetFromContext(ctx)
+	if err != nil {
+		common.NewErrResponse(http.StatusUnauthorized, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	err = controller.users.Update(ctx, users.User{
+		ID:        creds.UserID,
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		Website:   request.Website,
+		ImageUrl:  request.ImageUrl,
+		DeliveryAddress: users.DeliveryAddress{
+			City:           request.City,
+			Post:           request.Post,
+			PostDepartment: request.PostDepartment,
+		},
+	})
+	if err != nil {
+		controller.log.Error("error while update:", ErrUsers.Wrap(err))
+		if users.ParamsError.Has(err) {
+			common.NewErrResponse(http.StatusBadRequest, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+			return
+		}
+
+		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	user, err := controller.users.Get(ctx, creds.UserID)
+	if err != nil {
+		controller.log.Error("error while getting updated user:", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(ToUserView(user, creds)); err != nil {
+		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, errors.Unwrap(err)).Serve(controller.log, ErrUsers, w)
+		return
+	}
+}
+
+// GetRaffleParticipants is an endpoint for getting raffle participants by raffle id.
+// @Summary	Provides raffle participants by raffle id
+// @Tags	Users
+// @Produce	json
+// @Param	Authorization	header	string	false	"Bearer token to authorize access"
+// @Success	200		{object}	[]UserPublicView
+// @Failure 400,401,404,500	{object}	common.ErrResponseCode
+// @Router	/users/raffle-participants/{id}	[get].
+func (controller *Users) GetRaffleParticipants(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	raffleID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		common.NewErrResponse(http.StatusBadRequest, errs.New("failed to parse raffle id")).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	userList, err := controller.users.ListRaffleParticipants(ctx, raffleID)
+	if err != nil {
+		controller.log.Error("failed to get raffle participants", ErrUsers.Wrap(err))
+		if errors.Is(err, users.ErrNoUser) {
+			common.NewErrResponse(http.StatusNotFound, users.ErrNoUser).Serve(controller.log, ErrUsers, w)
+			return
+		}
+
+		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to get raffle participants")).Serve(controller.log, ErrUsers, w)
+		return
+	}
+
+	var viewList = make([]UserPublicView, len(userList))
+
+	for i, user := range userList {
+		viewList[i] = *ToUserPublicView(&user)
+	}
+
+	if err = json.NewEncoder(w).Encode(viewList); err != nil {
+		controller.log.Error("error while encoding response", ErrUsers.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, err).Serve(controller.log, ErrUsers, w)
+		return
+	}
+}

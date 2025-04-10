@@ -14,6 +14,9 @@ import (
 	"one-help/app"
 	"one-help/app/donations"
 	"one-help/app/events"
+	eventformats "one-help/app/events/formats"
+	eventparticipants "one-help/app/events/participants"
+	eventstatuses "one-help/app/events/statuses"
 	"one-help/app/fundraises"
 	fundraisestatuses "one-help/app/fundraises/statuses"
 	"one-help/app/payments"
@@ -105,6 +108,21 @@ func (db *database) Fundraises() fundraises.DB {
 // Events provides access to events DB.
 func (db *database) Events() events.DB {
 	return newEventsDB(db.conn)
+}
+
+// EventFormats provides access to event formats DB.
+func (db *database) EventFormats() eventformats.DB {
+	return newEventFormatsDB(db.conn)
+}
+
+// EventStatuses provides access to event statuses DB.
+func (db *database) EventStatuses() eventstatuses.DB {
+	return newEventStatusesDB(db.conn)
+}
+
+// EventParticipants provides access to event participants DB.
+func (db *database) EventParticipants() eventparticipants.DB {
+	return newEventParticipantsDB(db.conn)
 }
 
 // Donations provides access to donations DB.

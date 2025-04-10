@@ -14,3 +14,9 @@ type Donation struct {
 	Amount      float64
 	CreatedAt   time.Time
 }
+
+// ListParams holds the parameters for listing donations.
+type ListParams struct {
+	UserID      *uuid.UUID
+	FundraiseID *uuid.UUID
+}

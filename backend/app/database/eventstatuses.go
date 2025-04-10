@@ -12,22 +12,22 @@ import (
 // ErrEventStatuses indicates that there was an error in the database.
 var ErrEventStatuses = errs.Class("event statuses repository")
 
-// eventStatuesDB provides access to event statuses db.
+// eventStatusesDB provides access to event statuses db.
 //
 // architecture: Database
-type eventStatuesDB struct {
+type eventStatusesDB struct {
 	conn *sql.DB
 }
 
 // neweventStatuesDB is a constructor for base eventStatuesDB.
-func neweventStatuesDB(baseConn *sql.DB) eventstatuses.DB {
-	return &eventStatuesDB{
+func newEventStatusesDB(baseConn *sql.DB) eventstatuses.DB {
+	return &eventStatusesDB{
 		conn: baseConn,
 	}
 }
 
 // List returns all available event statuses.
-func (db *eventStatuesDB) List(ctx context.Context) ([]string, error) {
+func (db *eventStatusesDB) List(ctx context.Context) ([]string, error) {
 	query := `SELECT status FROM event_statuses`
 	rows, err := db.conn.QueryContext(ctx, query)
 	if err != nil {

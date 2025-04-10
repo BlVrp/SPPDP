@@ -128,8 +128,10 @@ func NewServer(
 	usersRouter.Use(server.withAuthMiddleware)
 	usersRouter.StrictSlash(true)
 	usersRouter.HandleFunc("/", usersController.Get).Methods(http.MethodGet, http.MethodOptions)
+	usersRouter.HandleFunc("/", usersController.Update).Methods(http.MethodPatch, http.MethodOptions)
 	usersRouter.HandleFunc("/change-password", usersController.ChangePassword).Methods(http.MethodPatch, http.MethodOptions)
 	usersRouter.HandleFunc("/{id}", usersController.GetByID).Methods(http.MethodGet, http.MethodOptions)
+	usersRouter.HandleFunc("/raffle-participants/{id}", usersController.GetRaffleParticipants).Methods(http.MethodGet, http.MethodOptions)
 
 	fundraisesRouter := apiRouter.PathPrefix("/fundraises").Subrouter()
 	fundraisesRouter.Use(server.jsonResponse)
@@ -153,6 +155,7 @@ func NewServer(
 	eventsRouter.HandleFunc("/", eventsController.List).Methods(http.MethodGet, http.MethodOptions)
 	eventsRouter.HandleFunc("/{id}", eventsController.GetByID).Methods(http.MethodGet, http.MethodOptions)
 	eventsRouter.HandleFunc("/", eventsController.Create).Methods(http.MethodPost, http.MethodOptions)
+	eventsRouter.HandleFunc("/{id}/enroll", eventsController.Enroll).Methods(http.MethodPost, http.MethodOptions)
 
 	rafflesRouter := apiRouter.PathPrefix("/raffles").Subrouter()
 	rafflesRouter.Use(server.jsonResponse)
