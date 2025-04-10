@@ -21,6 +21,7 @@ type Event struct {
 	FundraiseId     uuid.UUID
 	CreatedAt       time.Time
 	ImageUrl        string
+	FormUrl         string
 }
 
 // CreateParams defines needed params to create a new event.
@@ -35,4 +36,5 @@ type CreateParams struct {
 	Address         string
 	FundraiseId     uuid.UUID
 	ImageUrl        string
+	FormUrl         string
 }

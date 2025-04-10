@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	// ErrNoEventParticipants indicates that event does not exist.
+	// ErrNoEventsParticipants indicates that event does not exist.
 	ErrNoEventsParticipants = errs.New("event participant does not exist")
 )
 

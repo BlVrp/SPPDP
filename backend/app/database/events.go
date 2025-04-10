@@ -39,9 +39,9 @@ func (db *eventsDB) Create(ctx context.Context, event events.Event) error {
 
 	defer DeferCommitRollback(tx, &err)
 
-	query := `INSERT INTO events(event_id, title, description, start_date, end_date, format, max_participants, minimum_donation, address, status, fundraise_id, created_at)
+	query := `INSERT INTO events(event_id, title, description, start_date, end_date, format, max_participants, minimum_donation, address, status, fundraise_id, created_at, form_url)
               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
-	_, err = tx.ExecContext(ctx, query, event.ID, event.Title, event.Description, event.StartDate, event.EndDate, event.Format, event.MaxParticipants, event.MinimumDonation, event.Address, event.Status, event.FundraiseId, event.CreatedAt)
+	_, err = tx.ExecContext(ctx, query, event.ID, event.Title, event.Description, event.StartDate, event.EndDate, event.Format, event.MaxParticipants, event.MinimumDonation, event.Address, event.Status, event.FundraiseId, event.CreatedAt, event.FormUrl)
 	if err != nil {
 		return ErrEvents.Wrap(err)
 	}
@@ -62,7 +62,7 @@ func (db *eventsDB) Get(ctx context.Context, id uuid.UUID) (events.Event, error)
 		endDate sql.NullTime
 	)
 
-	query := `SELECT events.event_id, title, description, start_date, end_date, format, max_participants, minimum_donation, address, status, fundraise_id, created_at, COALESCE(file_name, '')
+	query := `SELECT events.event_id, title, description, start_date, end_date, format, max_participants, minimum_donation, address, status, fundraise_id, created_at, COALESCE(file_name, ''), form_url
               FROM events LEFT JOIN event_images ON events.event_id = event_images.event_id
               WHERE events.event_id = $1`
 
@@ -81,6 +81,7 @@ func (db *eventsDB) Get(ctx context.Context, id uuid.UUID) (events.Event, error)
 		&event.FundraiseId,
 		&event.CreatedAt,
 		&event.ImageUrl,
+		&event.FormUrl,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -109,7 +110,7 @@ func (db *eventsDB) List(ctx context.Context, params events.ListParams) ([]event
 		params.Page = 1
 	}
 
-	query := `SELECT events.event_id, title, description, start_date, end_date, format, max_participants, minimum_donation, address, status, fundraise_id, created_at, COALESCE(file_name, '')
+	query := `SELECT events.event_id, title, description, start_date, end_date, format, max_participants, minimum_donation, address, status, fundraise_id, created_at, COALESCE(file_name, ''), form_url
               FROM events LEFT JOIN event_images ON events.event_id = event_images.event_id`
 
 	{ // INFO: Paging.
@@ -145,6 +146,7 @@ func (db *eventsDB) List(ctx context.Context, params events.ListParams) ([]event
 			&event.FundraiseId,
 			&event.CreatedAt,
 			&event.ImageUrl,
+			&event.FormUrl,
 		)
 		if err != nil {
 			return nil, ErrEvents.Wrap(err)
