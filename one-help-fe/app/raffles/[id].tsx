@@ -18,6 +18,9 @@ export default function RaffleDetail() {
   const [currentGiftIndex, setCurrentGiftIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [showParticipants, setShowParticipants] = useState(false);
+
   const fetchRaffle = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -46,9 +49,38 @@ export default function RaffleDetail() {
     }
   };
 
-  useEffect(() => {
-    if (id) fetchRaffle();
-  }, [id]);
+  const fetchParticipants = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(
+        `http://localhost:8080/api/v0/users/raffle-participants/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Не вдалося отримати учасників");
+      }
+
+      const data = await res.json();
+      setParticipants(data);
+    } catch (err: any) {
+      Alert.alert("Помилка", err.message);
+    }
+  };
+
+  const toggleParticipants = async () => {
+    if (!showParticipants && participants.length === 0) {
+      await fetchParticipants();
+    }
+    setShowParticipants(!showParticipants);
+  };
 
   const nextGift = () => {
     setCurrentGiftIndex((prev) =>
@@ -61,6 +93,10 @@ export default function RaffleDetail() {
       prev - 1 >= 0 ? prev - 1 : raffle.gifts.length - 1
     );
   };
+
+  useEffect(() => {
+    if (id) fetchRaffle();
+  }, [id]);
 
   if (loading) {
     return (
@@ -104,7 +140,6 @@ export default function RaffleDetail() {
               className="w-full h-64 rounded-xl mb-2"
               resizeMode="cover"
             />
-
             <Text className="text-lg font-medium text-gray-700 text-center mb-2">
               🎁 {raffle.gifts[currentGiftIndex].title}
             </Text>
@@ -121,15 +156,66 @@ export default function RaffleDetail() {
           </Text>
         </TouchableOpacity>
 
-        {/* Title */}
+        {/* Raffle Title */}
         <Text className="text-2xl font-bold text-black text-center mt-6">
           {raffle.title}
         </Text>
 
-        {/* Description */}
+        {/* Raffle Description */}
         <Text className="text-gray-600 text-base text-center mt-3">
           {raffle.description}
         </Text>
+
+        {/* Toggle Participants */}
+        <TouchableOpacity
+          onPress={toggleParticipants}
+          className=" mt-6 py-2 px-4 rounded-xl items-center"
+        >
+          <Text className="text-primary font-medium">
+            {showParticipants ? "Сховати учасників" : "Показати учасників"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Participant List */}
+        {showParticipants && (
+          <View className="mt-4 bg-white rounded-xl px-4 py-3 shadow-sm">
+            <Text className="text-lg font-semibold mb-3 text-center">
+              Учасники ({participants.length})
+            </Text>
+            {participants.length === 0 ? (
+              <Text className="text-gray-500 text-center">
+                Поки що немає учасників
+              </Text>
+            ) : (
+              participants.map((p) => (
+                <View key={p.id} className="flex-row items-center mb-3">
+                  {p.imageUrl ? (
+                    <Image
+                      source={{ uri: p.imageUrl }}
+                      className="w-10 h-10 rounded-full mr-3"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View className="w-10 h-10 bg-gray-300 rounded-full mr-3 items-center justify-center">
+                      <Text className="text-white text-sm">
+                        {p.firstName[0]}
+                        {p.lastName[0]}
+                      </Text>
+                    </View>
+                  )}
+                  <View>
+                    <Text className="text-black font-medium">
+                      {p.firstName} {p.lastName}
+                    </Text>
+                    {p.city && (
+                      <Text className="text-gray-500 text-sm">{p.city}</Text>
+                    )}
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        )}
       </View>
     </ScrollView>
   );

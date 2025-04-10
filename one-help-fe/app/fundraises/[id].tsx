@@ -129,7 +129,7 @@ export default function DetailedFundraiseCard() {
 
         <View className="p-6">
           {/* Title */}
-          <Text className="text-2xl font-bold text-center text-black mb-2">
+          <Text className="text-2xl font-bold text-center text-black mb-4">
             {fundraiser.title}
           </Text>
 
@@ -143,6 +143,7 @@ export default function DetailedFundraiseCard() {
             📅 Завершення:{" "}
             {new Date(fundraiser.endDate).toLocaleDateString("uk-UA")}
           </Text>
+          
 
           {/* Progress
           <View className="mt-4">
@@ -160,6 +161,23 @@ export default function DetailedFundraiseCard() {
               {fundraiser.targetAmount.toLocaleString()} грн
             </Text>
           </View> */}
+
+          {/* Custom Progress Bar */}
+<View className="mt-4">
+  <View className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+    <View
+      style={{
+        width: `${progress * 100}%`,
+      }}
+      className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+    />
+  </View>
+  <Text className="text-center text-sm text-gray-600 mt-2">
+    {fundraiser.filledAmount.toLocaleString()} /{" "}
+    {fundraiser.targetAmount.toLocaleString()} грн
+  </Text>
+</View>
+
 
           {/* Donate button */}
           <TouchableOpacity

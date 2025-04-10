@@ -31,30 +31,21 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    console.log("handleSave")
-    if (!editedUser || !user?.id) return;
-
-    console.log("handleSave 2")
+    if (!editedUser) return;
   
-    const requiredFields = [
-      'firstName', 'lastName', 'phoneNumber', 'email',
-    ];
-  
+    const requiredFields = ['firstName', 'lastName', 'phoneNumber', 'email'];
     const allFieldsFilled = requiredFields.every(field => editedUser[field]);
   
     if (!allFieldsFilled) {
-      console.log("Помилка', 'Усі поля обов\'язкові")
       Alert.alert('Помилка', 'Усі поля обов\'язкові');
       return;
     }
   
     try {
-      console.log("handleSave 3")
-
       const token = await AsyncStorage.getItem('token');
   
-      const response = await fetch(`http://localhost:8080/api/v0/users/${user.id}`, {
-        method: 'PUT',
+      const response = await fetch(`http://localhost:8080/api/v0/users/`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -79,6 +70,7 @@ export default function SettingsPage() {
       Alert.alert('Помилка', error.message);
     }
   };
+  
   
 
   const handleLoginLogout = async () => {
