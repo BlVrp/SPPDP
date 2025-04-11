@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"path"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -359,23 +360,32 @@ func (controller *Fundraises) FinishDonation(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	donation, err := controller.fundraises.GetDonation(ctx, donationID)
+	if err != nil {
+		controller.log.Error("failed to get donation", ErrFundraises.Wrap(err))
+		common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to get donation")).Serve(controller.log, ErrFundraises, w)
+		return
+	}
+
+	redirectURL := path.Join(controller.frontEndRedirectUrl, donation.FundraiseId.String())
+
 	switch {
 	case r.URL.Query().Get("success") == "true":
-		if err = controller.fundraises.ConfirmDonation(ctx, donationID); err != nil {
+		if err = controller.fundraises.ConfirmDonation(ctx, donation); err != nil {
 			controller.log.Error("failed to confirm donation", ErrFundraises.Wrap(err))
 			common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to confirm donation")).Serve(controller.log, ErrFundraises, w)
 			return
 		}
 
-		http.Redirect(w, r, controller.frontEndRedirectUrl+"?success=true", http.StatusMovedPermanently)
+		http.Redirect(w, r, redirectURL+"?success=true", http.StatusMovedPermanently)
 	case r.URL.Query().Get("canceled") == "true":
-		if err = controller.fundraises.CancelDonation(ctx, donationID); err != nil {
+		if err = controller.fundraises.CancelDonation(ctx, donation); err != nil {
 			controller.log.Error("failed to cancel donation", ErrFundraises.Wrap(err))
 			common.NewErrResponse(http.StatusInternalServerError, errors.New("failed to cancel donation")).Serve(controller.log, ErrFundraises, w)
 			return
 		}
 
-		http.Redirect(w, r, controller.frontEndRedirectUrl+"?canceled=true", http.StatusMovedPermanently)
+		http.Redirect(w, r, redirectURL+"?canceled=true", http.StatusMovedPermanently)
 	default:
 		controller.log.Warn("invalid callback url format received")
 		common.NewErrResponse(http.StatusBadRequest, errors.New("failed to cancel donation")).Serve(controller.log, ErrFundraises, w)
