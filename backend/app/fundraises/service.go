@@ -150,13 +150,18 @@ func (service *Service) RegisterDonate(ctx context.Context, params RegisterDonat
 	return result, nil
 }
 
-// ConfirmDonation finishes donation processes.
-func (service *Service) ConfirmDonation(ctx context.Context, donationID uuid.UUID) error {
-	donation, err := service.donations.Get(ctx, donationID)
+// GetDonation returns donation by id.
+func (service *Service) GetDonation(ctx context.Context, donationID uuid.UUID) (donation donations.Donation, err error) {
+	donation, err = service.donations.Get(ctx, donationID)
 	if err != nil {
-		return Error.Wrap(err)
+		return donation, Error.Wrap(err)
 	}
 
+	return donation, nil
+}
+
+// ConfirmDonation finishes donation processes.
+func (service *Service) ConfirmDonation(ctx context.Context, donation donations.Donation) error {
 	payment, err := service.payments.Get(ctx, donation.ID)
 	if err != nil {
 		return Error.Wrap(err)
@@ -168,7 +173,7 @@ func (service *Service) ConfirmDonation(ctx context.Context, donationID uuid.UUI
 	}
 
 	if !paid {
-		service.logger.WarnF("receiver unpaid session: %s, for donation: %s in ConfirmDonation", payment.TransactionId, donationID.String())
+		service.logger.WarnF("receiver unpaid session: %s, for donation: %s in ConfirmDonation", payment.TransactionId, donation.ID.String())
 	}
 
 	donation.Amount = funded
@@ -188,6 +193,6 @@ func (service *Service) ConfirmDonation(ctx context.Context, donationID uuid.UUI
 }
 
 // CancelDonation removes canceled donation data.
-func (service *Service) CancelDonation(ctx context.Context, donationID uuid.UUID) error {
-	return Error.Wrap(service.donations.Delete(ctx, donationID))
+func (service *Service) CancelDonation(ctx context.Context, donation donations.Donation) error {
+	return Error.Wrap(service.donations.Delete(ctx, donation.ID))
 }
