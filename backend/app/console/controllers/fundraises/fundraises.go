@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"path"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -367,7 +366,7 @@ func (controller *Fundraises) FinishDonation(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	redirectURL := path.Join(controller.frontEndRedirectUrl, donation.FundraiseId.String())
+	redirectURL := controller.frontEndRedirectUrl + "/" + donation.FundraiseId.String()
 
 	switch {
 	case r.URL.Query().Get("success") == "true":
