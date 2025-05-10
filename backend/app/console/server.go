@@ -57,6 +57,22 @@ type Server struct {
 	events     *events.Service
 	raffles    *raffles.Service
 }
+// ------------------- NEW --------------------------------
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+// ---------------------------------------------------
 
 // NewServer is a constructor for console web server.
 // @title		Swagger API for One-Help app.
@@ -89,6 +105,11 @@ func NewServer(
 	rafflesController := rafflescontroller.NewRaffles(log, raffles, fundraises)
 
 	router := mux.NewRouter()
+
+	// ------------------- NEW --------------------------------
+	router.Use(corsMiddleware)
+	// ---------------------------------------------------
+
 	apiRouter := router.PathPrefix("/api/v0").Subrouter()
 
 	infoRouter := apiRouter.PathPrefix("/info").Subrouter()

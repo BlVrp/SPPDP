@@ -260,8 +260,9 @@ func (service *Service) verifyUserData(user *User) error {
 		return ParamsError.New("first name is empty")
 	case user.LastName == "":
 		return ParamsError.New("last name is empty")
-	case user.IsDeliveryAddressEmpty():
-		return ParamsError.New("delivery address is required")
+	// case user.IsDeliveryAddressEmpty():
+	// 	return ParamsError.New("delivery address is required")
+	// 
 	}
 
 	return nil
